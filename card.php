@@ -27,10 +27,10 @@ $gaps = [ 's' => 0, 'h' => 1, 'c' => 3, 'd' => 2, 'j' => 5 ];
 $colors = [ 's' => '#000', 'h' => '#E03', 'c' => '#05E', 'd' => '#391', 'j' => '#000' ];
 
 $classes = [ 
-  's' => ['skn' => '#FFDCB9', 'hir' => '#4B371A', 'mtl' => '#FFD700', 'cl1' => '#388E9E', 'cl2' => '#FF6400'],
-  'h' => ['skn' => '#E6BB91', 'hir' => '#EF7C67', 'mtl' => '#E6E8FA', 'cl1' => '#9162D5', 'cl2' => '#fCAC05'],
-  'c' => ['skn' => '#C78E63', 'hir' => '#F6AD11', 'mtl' => '#B87333', 'cl1' => '#fA6706', 'cl2' => '#119F80'],
-  'd' => ['skn' => '#A46135', 'hir' => '#444444', 'mtl' => '#D9D9D9', 'cl1' => '#439E96', 'cl2' => '#FACD01'],
+  's' => ['skn' => '#FFDCB9', 'hir' => '#F6AD11', 'mtl' => '#B87333', 'cl1' => '#388E9E', 'cl2' => '#FF6400'],
+  'h' => ['skn' => '#E6BB91', 'hir' => '#EF7C67', 'mtl' => '#FFD700', 'cl1' => '#9162D5', 'cl2' => '#fCAC05'],
+  'c' => ['skn' => '#C78E63', 'hir' => '#4B371A', 'mtl' => '#D9D9D9', 'cl1' => '#fA6706', 'cl2' => '#119F80'],
+  'd' => ['skn' => '#A46135', 'hir' => '#444444', 'mtl' => '#E6E8FA', 'cl1' => '#439E96', 'cl2' => '#FACD01'],
   'j' => ['skn' => '#5D4437', 'hir' => '', 'mtl' => '', 'cl1' => '', 'cl2' => ''],
 ];
 
@@ -95,24 +95,6 @@ if ($card >= 1 && $card <= 54) {
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 <?= CRD_AB_W ?> <?= CRD_AB_H ?>" version="1.1">
 <?php
-  // switch ($p1) {
-  //   case 's':
-  //     $cf1 = "";
-  //     $cf2 = "transparent";
-  //     break;
-  //   case 'h':
-  //     $cf1 = "#FFE";
-  //     $cf2 = "transparent";
-  //     break;
-  //   case 'c':
-  //     $cf1 = "#EED5AE";
-  //     $cf2 = "transparent";
-  //     break;
-  //   case 'd':
-  //     $cf1 = "#E6E8FA";
-  //     $cf2 = "transparent";
-  //     break;
-  // }
   $cf1 = 'transparent';
 ?>
 <style>

@@ -30,6 +30,10 @@
         <a href="card.php?card=<?= $i ?>" target="card"><img width="164" height="224" src="card.php?card=<?= $i ?>" alt="<?= $i ?>"></a>
         <?php } ?>
 
+        <?php for ($i = 1; $i <= 6; $i++) { ?>
+        <a href="back.php?card=<?= $i ?>" target="card"><img width="164" height="224" src="back.php?card=<?= $i ?>" alt="<?= $i ?>"></a>
+        <?php } ?>
+
       </div>
     </div>
   </body>
