@@ -259,18 +259,61 @@ $svg .= '<rect stroke="none" fill="#FFF" x="' . $i . '" y="' . $i . '" width="' 
 // $svg .= '<rect stroke="#F00" stroke-width="2" fill="none" x="66" y="66" width="690" height="990" rx="18" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7" />' . PHP_EOL;
 // $svg .= '<text x="411" y="561" text-anchor="middle" dominant-baseline="middle" font-size="100" fill="' . $colors[$p1] . '">' . strtoupper($place) . '</text>' . PHP_EOL;
 
+function darkenHtmlColor(string $colour, float $darkenAlpha = 0.5) {
+  $trimmed = trim($colour);
+
+  // Track whether the caller used a hash, and remove it for processing
+  $hadHash = strlen($trimmed) > 0 && $trimmed[0] === '#';
+  if ($hadHash) { $trimmed = substr($trimmed, 1); }
+
+  // Validate length and characters
+  $len = strlen($trimmed);
+  if ($len !== 3 && $len !== 6) { throw new InvalidArgumentException("Colour must be 3 or 6 hex digits, with an optional leading '#'."); }
+  if (!preg_match('/^[0-9a-fA-F]+$/', $trimmed)) { throw new InvalidArgumentException("Colour contains non-hex characters."); }
+
+  // Expand 3-digit to 6-digit
+  if ($len === 3) {
+    $trimmed = $trimmed[0] . $trimmed[0] . $trimmed[1] . $trimmed[1] . $trimmed[2] . $trimmed[2];
+  }
+
+  $hex = strtoupper($trimmed);
+
+  // If no darkening requested, return now
+  if ($darkenAlpha <= 0) {
+    return $hadHash ? ('#' . $hex) : $hex;
+  }
+
+  // Clamp alpha to [0, 1]
+  if ($darkenAlpha > 1) {
+    $darkenAlpha = 1.0;
+  }
+
+  // Extract components
+  $r = hexdec(substr($hex, 0, 2));
+  $g = hexdec(substr($hex, 2, 2));
+  $b = hexdec(substr($hex, 4, 2));
+
+  // Composite black with alpha over the colour: out = (1 - a) * src + a * 0
+  $factor = 1.0 - $darkenAlpha;
+  $rOut = (int) round($factor * $r);
+  $gOut = (int) round($factor * $g);
+  $bOut = (int) round($factor * $b);
+
+  $hexOut = sprintf('%02X%02X%02X', $rOut, $gOut, $bOut);
+
+  return $hadHash ? ('#' . $hexOut) : $hexOut;
+}
+
 // Royalty >> Jack, Queen, King
 $gap = $gaps[$p1];
+$box_color = darkenHtmlColor($colors[$p1], 0.333);
 if ( ($p2 == 'j') || ($p2 == 'q') || ($p2 == 'k') ) {
   $svg .= '<!-- Royal Square -->' . PHP_EOL;
   $svg .= sprintf('<g stroke="%s" stroke-width="%s" fill="none" stroke-linecap="round" stroke-linejoin="round">' . PHP_EOL,
-    $colors[$p1], RYL_SQ_S);
+    $box_color, RYL_SQ_S);
   // Box
   $svg .= sprintf('<rect x="%s" y="%s" width="%s" height="%s" rx="%s" />' . PHP_EOL,
     __((CRD_AB_W-RYL_SQ_W)/2), __((CRD_AB_H-RYL_SQ_H)/2), RYL_SQ_W, RYL_SQ_H, RYL_SQ_S*3);
-  // Box darken  
-  $svg .= sprintf('<rect x="%s" y="%s" width="%s" height="%s" rx="%s" stroke="%s" stroke-width="%s" />' . PHP_EOL,
-    __((CRD_AB_W-RYL_SQ_W)/2), __((CRD_AB_H-RYL_SQ_H)/2), RYL_SQ_W, RYL_SQ_H, RYL_SQ_S*3, 'rgba(0,0,0,0.2)', RYL_SQ_S);
 
   $svg .= gap_line($gap, (((RYL_SQ_W))-(RYL_SQ_S*3*2)), ((CRD_AB_H-RYL_SQ_H)/2), '#FFF', true);
   $svg .= gap_line($gap, (((RYL_SQ_W))-(RYL_SQ_S*3*2)), (CRD_AB_H-((CRD_AB_H-RYL_SQ_H)/2)), '#FFF', true, true);
@@ -423,7 +466,7 @@ $svg .= '</g>' . PHP_EOL;
 
 if (strpos('jqk', $p2) !== false || $card > 52) {
   $temp = sprintf('<use href="#f" fill="none" stroke="%s" stroke-width="%s" />' . PHP_EOL,
-    /* $colors[$p1] */ '#111', 6);
+    $box_color, 6);
   $temp .= sprintf('<use href="#%s" fill="%s" transform="translate(%s %s)" />' . PHP_EOL, 
     $p1, $colors[$p1], RYL_SQ_W-RYL_BX_W-100-5, RYL_BX_W); 
 
