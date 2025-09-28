@@ -1,9 +1,6 @@
 <?php
 
-header('Content-Type: image/svg+xml; charset=UTF-8');
-header('X-Content-Type-Options: nosniff');
-header('Content-Disposition: inline; filename="card.svg"');
-
+const MAX_CARDS = 8;
 const CRD_AB_W = 822;
 const CRD_AB_H = 1122;
 const CRD_FC_W = 750;
@@ -14,16 +11,37 @@ const CRD_PR_H = 990;
 // ---------- Code starts here ---------
 
 $card = 0;
-if (isset($_GET['card'])) {
-  $i = $_GET['card'];
+$is_command_line = php_sapi_name() === 'cli' || defined('STDIN');
+if ($is_command_line) {
+  // command line
+  $opts = array_change_key_case( getopt('', ['card:']), CASE_LOWER );
+} else {
+  $opts = array_change_key_case( $_REQUEST, CASE_LOWER );
+}
 
+if (isset($opts['card'])) {
+  $i = $opts['card'];
   if (is_numeric($i)) {
-    $i = (int) $i;
-    if ($i >= 1 && $i <= 54) {
+    $i = intval($i);
+    if ($i >= 1 && $i <= MAX_CARDS) {
       $card = $i;
     }
   }
 }
+
+if ($card == 0) {
+  echo 'You must specify a card from 1 to ' . MAX_CARDS . PHP_EOL;
+  if ($is_command_line) {
+    echo 'Usage: php ' . basename(__FILE__) . ' --card=' . MAX_CARDS . PHP_EOL;
+  }
+  exit(0);
+}
+
+
+header('Content-Type: image/svg+xml; charset=UTF-8');
+header('X-Content-Type-Options: nosniff');
+header('Content-Disposition: inline; filename="card.svg"');
+
 
 $color1 = ($card % 2 !== 0) ? '#1A26B0' : '#B0261A';
 $color2 = ($card % 2 === 0) ? '#1A26B0' : '#B0261A';
