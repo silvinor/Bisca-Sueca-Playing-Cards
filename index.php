@@ -13,11 +13,11 @@
   </head>
   <style>
     body {
-      background-color: #777;
+      background-color: #7777;
     }
   </style>
   <body>
-    <div class="container m-5">
+    <div class="container">
       <h1 class="text-center display-1">Bisca-Sueca Playing Cards</h1>
       <div class="text-center">
 
@@ -30,7 +30,7 @@
         <a href="card.php?card=<?= $i ?>" target="card"><img width="164" height="224" src="card.php?card=<?= $i ?>" alt="<?= $i ?>"></a>
         <?php } ?>
 
-        <?php for ($i = 1; $i <= 6; $i++) { ?>
+        <?php for ($i = 1; $i <= 8; $i++) { ?>
         <a href="back.php?card=<?= $i ?>" target="card"><img width="164" height="224" src="back.php?card=<?= $i ?>" alt="<?= $i ?>"></a>
         <?php } ?>
 
