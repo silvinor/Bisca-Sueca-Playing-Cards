@@ -407,8 +407,8 @@ function pips_1($fc, $scl) {
   return sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CRD_AB_W-(100*$scl))/2), ((CRD_AB_H-(100*$scl))/2), $scl);
 }
 
-function pips_2($fc, $scl) {
-  return pips_mirror( sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CRD_AB_W-(100*$scl))/2), ((CRD_AB_H-(100*$scl))/4), $scl) );
+function pips_2($fc, $scl, $offset = 0) {
+  return pips_mirror( sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CRD_AB_W-(100*$scl))/2), ((CRD_AB_H-(100*$scl))/4)+$offset, $scl) );
 }
 
 function pips_4($fc, $scl, $offset = 0) {
@@ -463,9 +463,9 @@ switch ($p2) {
     $svg .= pips_6($p1, $scl);
     break;
   case '7':
-    $svg .= pips_4($p1, $scl, -(CRD_AB_H/19));
-    $svg .= pips_7($p1, $scl);
     $svg .= pips_1($p1, $scl);
+    $svg .= pips_2($p1, $scl, -(CRD_AB_H/19));
+    $svg .= pips_4($p1, $scl, (CRD_AB_H/12));
     break;
   case '8':
     // $svg .= pips_4($p1, $scl, CRD_AB_H/19*2.25);
