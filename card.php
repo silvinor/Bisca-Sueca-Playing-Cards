@@ -509,15 +509,15 @@ if (strpos('jqk', $p2) !== false || $card > 52) {
     (CRD_AB_W-(RYL_FC_W))/2, (CRD_AB_H-RYL_FC_H)/2);
   $svg .= $temp; // face 1st half 1/2
   // alternate A if there
-  $svg .= sprintf('<use href="#alt%s" fill="none" stroke="%s" stroke-width="%s" />' . PHP_EOL,
-    ($card <= 42 ? $p1 : '1'), $box_color, 6);
+  $svg .= sprintf('<use href="#alt_%s" fill="none" stroke="%s" stroke-width="%s" />' . PHP_EOL,
+    ($card <= 52 ? $p1 : '1'), $box_color, 6);
   $svg .= '</g>' . PHP_EOL;
   $svg .= sprintf('<g transform="rotate(180 %s %s) translate(%s,%s)">' . PHP_EOL, 
     CRD_AB_W/2, CRD_AB_H/2, (CRD_AB_W-RYL_FC_W)/2, (CRD_AB_H-RYL_FC_H)/2);
   $svg .= $temp; // face 2nd half 1/2  
   // alternate B if there
-  $svg .= sprintf('<use href="#alt%s" fill="none" stroke="%s" stroke-width="%s" />' . PHP_EOL,
-    ($card <= 42 ? $p1 : '2'), $box_color, 6);
+  $svg .= sprintf('<use href="#alt_%s" fill="none" stroke="%s" stroke-width="%s" />' . PHP_EOL,
+    ($card <= 52 ? $p1 : '2'), $box_color, 6);
   $svg .= '</g>' . PHP_EOL;
 }
 
