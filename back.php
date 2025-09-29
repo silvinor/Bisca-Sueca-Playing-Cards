@@ -37,14 +37,14 @@ if ($card == 0) {
   exit(0);
 }
 
-
 header('Content-Type: image/svg+xml; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
 header('Content-Disposition: inline; filename="card.svg"');
 
 
-$color1 = ($card % 2 !== 0) ? '#1A26B0' : '#B0261A';
-$color2 = ($card % 2 === 0) ? '#1A26B0' : '#B0261A';
+// Spanish Blue & Spanish Red
+$color1 = ($card % 2 !== 0) ? '#0070B8' : '#E60026';
+$color2 = ($card % 2 === 0) ? '#0070B8' : '#E60026';
 
 $set = intdiv($card+1, 2);
 
@@ -110,7 +110,8 @@ $set = intdiv($card+1, 2);
 
   $str = '';
 
-  $mirror = $card >= 6;
+  $mirror = $card != 5;
+  if ($card == 6) $color1 = '#7851a9';  // Royal Purple
 
   if ($card <= 5) {
     switch ($set) {
@@ -120,7 +121,7 @@ $set = intdiv($card+1, 2);
     }
     for ($i = 0; $i < ((750/$k)/2); $i++) {
       for ($j = 0; $j < ((1050/$k)/2); $j++) {
-        $str .= sprintf('<use href="#pt" transform="translate(%s,%s)" />' . PHP_EOL, 
+        $str .= sprintf('<use href="#pt" transform="translate(%s,%s) scale(1.005,1.005)" />' . PHP_EOL, 
           ($i * $k), 
           ($j * $k));
       }
@@ -129,7 +130,7 @@ $set = intdiv($card+1, 2);
     // Random Noise Generator
     $k = 5;
     srand(456 + ($card - 6));
-    $str .= sprintf('<g stroke="none" fill="%s">', ($card == 6 ? '#333' : $color1) );
+    $str .= sprintf('<g stroke="none" fill="%s">', $color1);
     for ($i = 0; $i < ((750/$k)/2); $i++) {
       for ($j = 0; $j < ((1050/$k)/2); $j++) {
         if (rand(0, 1) !== 0) {
@@ -226,11 +227,11 @@ echo $svg;
 if ($card >= 6) {
   ?>
 
-  <g stroke="#fff" stroke-width="18" fill="none">
+  <!-- <g stroke="#fff" stroke-width="18" fill="none">
     <circle cx="411" cy="561" r="308.25" />
-    <circle cx="411" cy="561" r="308.25" stroke="<?= ($card == 6 ? '#333' : $color1) ?>" stroke-width="6" />
-  </g>
-  <g stroke="none" fill="<?= ($card == 6 ? '#333' : $color1) ?>" opacity="0.5">
+    <circle cx="411" cy="561" r="308.25" stroke="<?= $color1 ?>" stroke-width="6" />
+  </g> -->
+  <g stroke="none" fill="<?= $color1 ?>" opacity="0.5">
     <g>
       <g id="half" transform="translate(311, 140.5)">
         <use href="#bx" />
