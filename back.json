@@ -1,0 +1,12 @@
+{
+  "1":  { "lib": "casino", "ofs": 0,  "mir": true },
+  "2":  { "lib": "casino", "ofs": 0,  "mir": true },
+  "3":  { "lib": "x"     , "ofs": -2, "mir": true },
+  "4":  { "lib": "x"     , "ofs": -2, "mir": true },
+  "5":  { "lib": "pips"  , "ofs": -4 },
+  "6":  { "lib": "bisca" , "ofs": -5, "mir": true },
+  "7":  { "lib": "bisca" , "ofs": -5, "mir": true },
+  "8":  { "lib": "bisca" , "ofs": -5, "mir": true },
+  "9":  { "lib": "casino", "ofs": -8,              "bls": true },
+  "10": { "lib": "casino", "ofs": -8,              "bls": true }
+}

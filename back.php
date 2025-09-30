@@ -1,268 +1,199 @@
 <?php
+global $semaphore, $card, $debug;
+$semaphore = __FILE__;
 
-const MAX_CARDS = 8;
-const CRD_AB_W = 822;
-const CRD_AB_H = 1122;
-const CRD_FC_W = 750;
-const CRD_FC_H = 1050;
-const CRD_PR_W = 690;
-const CRD_PR_H = 990;
+include_once 'common.php';
+
+// **********************************************************************
+// ----- General Notes -----
+// Backs are:    750 x 1050 (CARD_CUT_LINE_W x CARD_CUT_LINE_H)
+// Divisors are: 1, 2, 3, 5, 6, 10, 15, 25, 30, 50, 75, 150
+// **********************************************************************
 
 // ---------- Code starts here ---------
 
-$card = 0;
-$is_command_line = php_sapi_name() === 'cli' || defined('STDIN');
-if ($is_command_line) {
-  // command line
-  $opts = array_change_key_case( getopt('', ['card:']), CASE_LOWER );
-} else {
-  $opts = array_change_key_case( $_REQUEST, CASE_LOWER );
+$x = file_get_contents("back.json");
+$backs = json_decode($x, true);
+if (json_last_error() !== JSON_ERROR_NONE) {
+  echo "Error decoding JSON: " . json_last_error_msg() . PHP_EOL;
+  exit(2);
 }
-
-if (isset($opts['card'])) {
-  $i = $opts['card'];
-  if (is_numeric($i)) {
-    $i = intval($i);
-    if ($i >= 1 && $i <= MAX_CARDS) {
-      $card = $i;
-    }
-  }
+$x = [];
+foreach ($backs as $key => $value) {
+  if (is_numeric($key) && $key > 0) $x[$key] = $value;
 }
+$backs = $x;
 
-if ($card == 0) {
-  echo 'You must specify a card from 1 to ' . MAX_CARDS . PHP_EOL;
+if (!isset($backs[$card])) {
+  echo
+    'You must specify a card number in the rage: ' .
+    implode(", ", array_keys($backs)) .
+    '.' . PHP_EOL;
+  echo '<br>Usage: ';
   if ($is_command_line) {
-    echo 'Usage: php ' . basename(__FILE__) . ' --card=' . MAX_CARDS . PHP_EOL;
+    echo 'php ' . basename(__FILE__) . ' --card=n' . PHP_EOL;
+  } else {
+    echo basename(__FILE__) . '?card=n' . PHP_EOL;
   }
-  exit(0);
+  exit(1);
 }
+
+$fn = isset($backs[$card]['lib']) ? 'back-'.$backs[$card]['lib'].'.php' : false;
+if (($fn !== false) && file_exists($fn) && is_file($fn)) {
+  @include_once $fn;
+} else {
+  echo "Error: The file '{$fn}' could not be found." . PHP_EOL;
+  exit(2);
+}
+$wantCard = isset($backs[$card]['ofs']) ? $card + $backs[$card]['ofs'] : $card;
+$fu = 'lib_validate_' . $backs[$card]['lib'];
+if (function_exists($fu)) {
+  if (!$fu($wantCard)) {
+    echo "Invalid card number ('{$card}') for the `{$fn}` library." . PHP_EOL;
+    exit(3);
+  }
+} else {
+  echo "Library `{$fn}` does not have a validation function." . PHP_EOL;
+  exit(4);
+}
+$isBorderless = isset($backs[$card]['bls']) ? !!$backs[$card]['bls'] : false;
+$isMirrored = isset($backs[$card]['mir']) ? !!$backs[$card]['mir'] : false;
 
 header('Content-Type: image/svg+xml; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
 header('Content-Disposition: inline; filename="card.svg"');
 
-
-// Spanish Blue & Spanish Red
-$color1 = ($card % 2 !== 0) ? '#0070B8' : '#E60026';
-$color2 = ($card % 2 === 0) ? '#0070B8' : '#E60026';
-
-$set = intdiv($card+1, 2);
-
-// **********************************************************************
-// 750 x 1500
-// 1, 2, 3, 5, 6, 10, 15, 25, 30, 50, 75, 150
-// **********************************************************************
-
 ?>
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Card <?= $card ?>, Set <?= $set ?> -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 <?= CRD_AB_W ?> <?= CRD_AB_H ?>" version="1.1">
-<style>
-  .cf1 { fill: <?= $color1 ?>; }
-  .cf2 { fill: <?= $color2 ?>; }
-  .cs0 { stroke: #000; }
-  .cs1 { stroke: <?= $color1 ?>; }
-</style>
-<defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 <?= CARD_BLEED_W ?> <?= CARD_BLEED_H ?>" version="1.1">
 <?php
-  switch ($set) {
-    case 1:
-?>
-  <g id="pt" class="cf1">
-    <path d="M2,75 L0,75 L0,73 L2,75 Z M6,63 L3,66 L9,72 L12,69 L6,63 Z M69,63 L63,69 L66,72 L72,66 L69,63 Z M11,58 L8,61 L14,67 L17,64 L11,58 Z M64,58 L58,64 L61,67 L67,61 L64,58 Z M16,53 L13,56 L19,62 L22,59 L16,53 Z M59,53 L53,59 L56,62 L62,56 L59,53 Z M21,48 L18,51 L24,57 L27,54 L21,48 Z M54,48 L48,54 L51,57 L57,51 L54,48 Z M26,43 L23,46 L29,52 L32,49 L26,43 Z M49,43 L43,49 L46,52 L52,46 L49,43 Z M31,38 L28,41 L34,47 L37,44 L31,38 Z M44,38 L38,44 L41,47 L47,41 L44,38 Z M38,35 L37,35 L35,37 L35,38 L37,40 L38,40 L40,38 L40,37 L38,35 Z M41,28 L38,31 L44,37 L47,34 L41,28 Z M34,28 L28,34 L31,37 L37,31 L34,28 Z M46,23 L43,26 L49,32 L52,29 L46,23 Z M29,23 L23,29 L26,32 L32,26 L29,23 Z M51,18 L48,21 L54,27 L57,24 L51,18 Z M24,18 L18,24 L21,27 L27,21 L24,18 Z M56,13 L53,16 L59,22 L62,19 L56,13 Z M19,13 L13,19 L16,22 L22,16 L19,13 Z M61,8 L58,11 L64,17 L67,14 L61,8 Z M14,8 L8,14 L11,17 L17,11 L14,8 Z M66,3 L63,6 L69,12 L72,9 L66,3 Z M9,3 L3,9 L6,12 L12,6 L9,3 Z M75,0 L75,2 L73,0 L75,0 Z M75,73 L75,75 L73,75 L75,73 Z M75,68 L74,68 L68,74 L68,75 L7,75 L7,74 L1,68 L0,68 L0,7 L1,7 L7,1 L7,0 L68,0 L68,1 L74,7 L75,7 L75,68 Z M0,0 L2,0 L0,2 L0,0 Z" />
-  </g>
-<?php
-      break;
-    case 2: 
-?>
-  <g id="pt" class="cf1">
-    <path d="M16.6969727,5.20776367 L22,0 L18.0213867,0 L15.6047852,2.41660156 C13.8900391,4.13134766 11.1099609,4.13134766 9.39477539,2.41660156 L6.97861328,0 L3,0 L8.30302734,5.20776367 C10.620459,7.52607422 14.3786133,7.52607422 16.6969727,5.20776367 Z" />
-    <path d="M22.5833984,9.39477539 L25,6.97861328 L25,3 L19.7917969,8.30307617 C17.4739258,10.6214355 17.4739258,14.3786621 19.7917969,16.6969727 L25,22 L25,18.0213867 L22.5833984,15.6047852 C20.8686523,13.8900391 20.8686523,11.1100098 22.5833984,9.39477539 Z" />
-    <path d="M8.30302734,19.791748 L3,25 L6.97861328,25 L9.39472656,22.5833984 C11.1099609,20.8686523 13.8899902,20.8686523 15.6047363,22.5833984 L18.0213867,25 L22,25 L16.6969727,19.791748 C14.3786133,17.473877 10.620459,17.473877 8.30302734,19.791748 Z" />
-    <path d="M5.20776367,8.30258789 L0,3 L0,6.97861328 L2.41660156,9.39477539 C4.13134766,11.1100098 4.13134766,13.8900391 2.41660156,15.6047852 L0,18.0213867 L0,22 L5.20776367,16.6969727 C7.52612305,14.3786133 7.52612305,10.6213867 5.20776367,8.30258789 Z" />
-  </g>
-<?php
-      break;
-    default:
-      if ($card == 5) {
-?>
-  <g id="pt">
-    <path class="cf1" d="M17.6882812,1.19915625 C17.46525,0.949265625 17.5039922,0.972328125 17.5039922,0.972328125 C17.389875,0.831351562 17.2257656,0.75 17.0533594,0.75 C16.8810234,0.75 16.7175469,0.831351562 16.6034297,0.972328125 C16.6034297,0.972328125 16.6430156,0.949265625 16.4191406,1.19915625 C10.9083281,7.41653906 0.75,10.9382109 0.75,19.8877969 C0.75,20.3474297 0.770179687,20.8264688 0.811945313,21.3248437 C1.25582812,26.5790156 5.06479687,29.5597031 9.18032812,29.5597031 C11.5163906,29.5597031 13.7360859,28.0025625 15.2201016,25.7448984 C14.5239375,30.1096172 13.6308984,34.953375 13.3801641,35.5547578 C12.9525937,36.5791406 13.4652422,36.7500703 13.7211797,36.7500703 L20.3861719,36.7500703 C20.6421094,36.7500703 21.1539141,36.5791406 20.7271172,35.5547578 C20.4771562,34.953375 19.5825703,30.1096172 18.8880234,25.7448984 C20.3712656,28.0025625 22.5908906,29.5597031 24.9270234,29.5597031 C29.0433281,29.5597031 32.8514531,26.5790156 33.2961797,21.3248437 C33.337875,20.8264687 33.3572812,20.3474297 33.3572812,19.8877969 C33.3572812,10.9382109 23.1990937,7.41653906 17.6882812,1.19915625 Z" />
-    <path class="cf2" d="M68.3196943,2.71173769 C63.0774053,-1.45645762 55.7504912,1.46228456 54.200874,7.29006581 C52.6511865,1.46228456 45.3249053,-1.45645762 40.0826865,2.71173769 C35.0591396,6.70710488 35.4648428,14.6616986 40.3829209,21.0400971 C44.9270068,26.9339721 52.0268115,32.6129018 53.9401553,36.5552533 C54.0158818,36.7124721 54.1866709,36.7500189 54.2009443,36.7500189 C54.2157803,36.7500189 54.3866396,36.7124721 54.462999,36.5552533 C56.3749365,32.6129018 63.4748115,26.9339721 68.0195303,21.0400971 C72.9381709,14.6617689 73.3431709,6.70710488 68.3196943,2.71173769 Z" />
-    <path class="cf1" d="M64.1316072,51.9105645 C61.8984822,51.9526114 59.8992869,52.910338 58.4800994,54.4169942 C57.7721931,54.9799161 57.1654666,55.3522911 56.860451,54.9115723 C56.2526697,54.2279942 57.424076,53.712252 59.1314041,52.2179005 C60.8387322,50.7235489 61.9007322,48.5154551 61.8550291,46.0696348 C61.7724119,41.6689864 58.1386619,38.1684083 53.7380838,38.2514473 C49.337576,38.3338536 45.83749,41.9678848 45.9199666,46.3683926 C45.9712947,49.1086114 47.4008181,51.5000801 49.5349431,52.894588 C50.668451,53.6969942 51.9334431,54.4236739 51.4484275,55.0135255 C51.1596541,55.4654239 50.5394978,55.1150567 49.8111306,54.5795567 C48.3370291,53.1266895 46.3023963,52.245252 44.0696228,52.2867364 C39.6690447,52.3691426 36.1687478,56.0038067 36.2514353,60.4043145 C36.3339119,64.8042598 39.9682244,68.3049083 44.3681697,68.2218692 C48.42274,68.146213 51.7099197,65.0549239 52.1383338,61.1281817 C52.2033728,60.7822442 52.3034978,60.0280723 52.5557791,60.0432598 C52.8538338,60.0600645 52.9440447,59.9894005 52.9687947,61.3166192 C53.1824041,67.8125098 49.588875,74.0879297 49.5,74.25 C49.4915625,74.26575 59.4706094,74.2388203 59.5,74.25 C59.4938125,74.2416328 55.6072713,67.7671583 55.5772478,61.2678223 C55.5522869,59.9411661 55.6450994,60.0078926 55.9420291,59.9792755 C56.1938181,59.9551583 56.3216463,60.7048301 56.3968103,61.0462676 C56.975201,64.9562051 60.3762166,67.9224083 64.430576,67.8461192 C68.8307322,67.7631505 72.3313806,64.1291192 72.2486931,59.7291739 C72.165865,55.3286661 68.532115,51.8281583 64.1316072,51.9105645 Z" />
-    <polygon class="cf2" points="16.9294141 38.25 4 56.25 16.9294141 74.25 29.8588281 56.25" />
-  </g>
-<?php
-      } else if ($card >= 6) {
-?>
-  <!-- Bisca Ambigram -->
-  <g id="bx">
-    <path d="M249.50025,0 C250.16725,18 250.16725,36 249.50025,54 C244.23925,78.414 229.07225,91.914 204.00025,94.5 C169.33525,95 134.66825,95.167 100.00025,95 L100.00025,145 L100.00025,145 C128.57225,143.652 145.40625,128.985 150.50025,101 C153.26525,125.078 166.43225,139.578 190.00025,144.5 C215.96125,147.873 227.12725,136.706 223.50025,111 C221.40325,104.943 217.57025,100.443 212.00025,97.5 C230.76625,100.817 242.93325,111.65 248.50025,130 C254.63025,169.688 237.79625,191.354 198.00025,195 C178.52125,193.693 164.02125,184.693 154.50025,168 C152.70325,163.477 151.53625,158.81 151.00025,154 C151.18825,152.397 150.68825,151.063 149.50025,150 C149.03625,150.594 148.86925,151.261 149.00025,152 C145.96725,175.921 132.63425,190.088 109.00025,194.5 L37.00025,195.5 L37.00025,195.5 C26.41925,196.249 16.75225,199.582 8.00025,205.5 C4.88625,208.56 2.38625,212.06 0.50025,216 C-0.16675,173 -0.16675,130 0.50025,87 C4.32725,64.117 17.49425,50.284 40.00025,45.5 L210.00025,44.5 L210.00025,44.5 C233.87425,39.295 247.04125,24.461 249.50025,0 Z M75.00025,95 L43.00025,95 C29.76325,100.45 23.93025,110.45 25.50025,125 C27.32425,135.176 33.15725,141.676 43.00025,144.5 C53.66125,145 64.32825,145.167 75.00025,145 L75.00025,145 L75.00025,95 L75.00025,95 Z" />
-    <path d="M151.00025,154 C150.33325,153.333 149.66725,152.667 149.00025,152 C148.86925,151.261 149.03625,150.594 149.50025,150 C150.68825,151.063 151.18825,152.397 151.00025,154 Z" />
-    <path d="M199.00025,200 C200.16225,217.829 200.32925,235.829 199.50025,254 C194.23925,278.414 179.07225,291.914 154.00025,294.5 C127.66925,295 101.33525,295.167 75.00025,295 C75.00025,278.333 75.00025,261.667 75.00025,245 C103.33525,245.167 131.66925,245 160.00025,244.5 C184.01025,239.311 197.01025,224.478 199.00025,200 Z" />
-    <path d="M40.00025,245 C43.33325,245 46.66725,245 50.00025,245 C50.00025,261.667 50.00025,278.333 50.00025,295 C28.27725,298.419 20.77725,310.753 27.50025,332 C31.22125,338.372 36.72125,342.539 44.00025,344.5 C70.99825,345 97.99825,345.167 125.00025,345 C125.47325,332.703 131.47325,324.537 143.00025,320.5 C155.00025,319.833 167.00025,319.833 179.00025,320.5 C189.24425,322.416 196.07825,328.249 199.50025,338 C200.16725,358.333 200.16725,378.667 199.50025,399 C196.83325,412.417 188.66625,419.417 175.00025,420 C175.16725,401.997 175.00025,383.997 174.50025,366 C170.91225,357.293 164.74525,354.793 156.00025,358.5 C154.50025,360 153.00025,361.5 151.50025,363 C150.74825,370.676 148.74825,378.009 145.50025,385 C141.84825,390.579 136.68225,393.745 130.00025,394.5 C100.66725,395.167 71.33325,395.167 42.00025,394.5 C18.55725,390.719 4.72425,377.219 0.50025,354 C-0.16675,331.667 -0.16675,309.333 0.50025,287 C4.42925,264.037 17.59525,250.037 40.00025,245 Z" />
-    <path d="M244.00025,245 C265.01025,244.178 275.17725,254.178 274.50025,275 C269.84825,289.966 259.68125,296.466 244.00025,294.5 C229.60225,289.416 223.43525,279.249 225.50025,264 C228.51725,254.484 234.68425,248.151 244.00025,245 Z" />
-  </g>
-<?php
-      }
-      break;
+$fu = 'lib_comment_' . $backs[$card]['lib'];
+if (function_exists($fu)) {
+  echo '<!-- ';
+  $fu($wantCard);
+  echo ' -->' . PHP_EOL;
+}
+$fu = 'lib_style_' . $backs[$card]['lib'];
+if (function_exists($fu)) {
+  echo '<style>' . PHP_EOL;
+  $fu($wantCard);
+  echo '</style>' . PHP_EOL;
+}
+$fu = 'lib_defs_' . $backs[$card]['lib'];
+if (function_exists($fu)) {
+  echo '<defs>' . PHP_EOL;
+  $fu($wantCard);
+  echo '</defs>' . PHP_EOL;
+}
+
+// ----- Card face -----
+$i = (CARD_BLEED_W - CARD_CUT_LINE_W) / 2;
+printf('<rect id="print" stroke="none" fill="#FFF" x="%s" y="%s" width="%s" height="%s" rx="%s" />' . PHP_EOL,
+  $i, $i,
+  CARD_CUT_LINE_W, CARD_CUT_LINE_H,
+  ($i * 1.5)
+  );
+
+// ----- Back -----
+
+print('<g id="back" ');
+if ($isBorderless) {
+  $enlg = 1.05; // enlarge to encroach on the cut-line
+  $ox = (CARD_BLEED_W - (CARD_CUT_LINE_W * $enlg)) / 2;
+  $oy = (CARD_BLEED_H - (CARD_CUT_LINE_H * $enlg)) / 2;
+  printf('transform="translate(%s,%s) scale(%3$s,%3$s)"',
+    $ox, $oy, $enlg );
+} else {
+  $ox = (CARD_BLEED_W - CARD_SAFE_W) / 2;
+  $oy = (CARD_BLEED_H - CARD_SAFE_H) / 2;
+  $sx = round(CARD_SAFE_W / CARD_CUT_LINE_W, 5);
+  $sy = round(CARD_SAFE_H / CARD_CUT_LINE_H, 5);
+  printf('transform="translate(%s,%s) scale(%s,%s)"',
+    $ox, $oy, $sx, $sy );
+}
+print('>' . PHP_EOL);
+for ($i = 0; $i < 2; $i++) {
+  printf('  <g id="half_%s"', ($i+1));
+  if ($i != 0) {
+    printf(' transform="rotate(180 %s %s)"',
+      CARD_CUT_LINE_W / 2,
+      CARD_CUT_LINE_H / 2
+    );
   }
-
-  $str = '';
-
-  $mirror = $card != 5;
-  if ($card == 6) $color1 = '#7851a9';  // Royal Purple
-
-  if ($card <= 5) {
-    switch ($set) {
-      case 1:  $k = 75; break;
-      case 2:  $k = 25; break;
-      default: $k = 75; break;
-    }
-    for ($i = 0; $i < ((750/$k)/2); $i++) {
-      for ($j = 0; $j < ((1050/$k)/2); $j++) {
-        $str .= sprintf('<use href="#pt" transform="translate(%s,%s) scale(1.005,1.005)" />' . PHP_EOL, 
-          ($i * $k), 
-          ($j * $k));
-      }
-    }
-  } else {
-    // Random Noise Generator
-    $k = 5;
-    srand(456 + ($card - 6));
-    $str .= sprintf('<g stroke="none" fill="%s">', $color1);
-    for ($i = 0; $i < ((750/$k)/2); $i++) {
-      for ($j = 0; $j < ((1050/$k)/2); $j++) {
-        if (rand(0, 1) !== 0) {
-          $str .= sprintf('<rect x="%s" y="%s" width="%s" height="%s" />', 
-            ($i * $k), 
-            ($j * $k),
-            $k,
-            $k);
+  print('>' . PHP_EOL);
+  for ($j = 0; $j < 2; $j++) {
+    $q = ($j + 1) + ($i * 2);
+    $fu = 'quadrant_' . $q . '_' . $backs[$card]['lib'];
+    if (function_exists($fu)) {
+      printf('    <g id="quad_%s"', ($q));
+      if ($j != 0) {
+        if ($isMirrored) {
+          printf(' transform="translate(%s,0) scale(-1, 1)"',
+            CARD_CUT_LINE_W
+          );
+        } else {
+          printf(' transform="rotate(180 %s %s)"',
+            CARD_CUT_LINE_W / 2,
+            CARD_CUT_LINE_H / 4
+          );
         }
       }
+      print('>');
+      $fu($wantCard);
+
+      // if ($debug) {
+      //   printf('<rect class="DEBUG" fill="none" stroke="#F00D" stroke-width="1" x="%s" y="%s" width="%s" height="%s" stroke-dasharray="6 6" />',
+      //     0, 0, CARD_CUT_LINE_W/2, CARD_CUT_LINE_H/2 );
+      //   printf('<text class="DEBUG" x="%s" y="%s" text-anchor="middle" dominant-baseline="middle" fill="#F005" font-family="serif" font-size="%s" font-weight="bold">27</text>',
+      //     CARD_CUT_LINE_W/4, CARD_CUT_LINE_H/4, CARD_CUT_LINE_W/2 );
+      // }
+
+      print('</g>' . PHP_EOL);
     }
-    $str .= '</g>' . PHP_EOL;
   }
-  $out = '<!-- *** BACK *** -->'. PHP_EOL;
-  // $out .= '<g>' . PHP_EOL;
-  $out .= $str;
-  if ($mirror) {
-    $out .= sprintf('<g transform="translate(%s, 0) scale(-1, 1)">%s</g>'. PHP_EOL, 750, PHP_EOL . $str);
-  } else {
-    $out .= sprintf('<g transform="rotate(180 %s %s)">%s</g>'. PHP_EOL, (750/2), (1050/4), PHP_EOL . $str);
+
+  // Halves
+  $fu = 'half_' . ($i + 1) . '_' . $backs[$card]['lib'];
+  if (function_exists($fu)) {
+    $fu($wantCard);
   }
-  // $out .= '</g>' . PHP_EOL;
 
-  $out .= sprintf('<g transform="rotate(180 %s %s)">' . PHP_EOL, (750/2), (1050/2));
-  $out .= $str;
-  if ($mirror) {
-    $out .= sprintf('<g transform="translate(%s, 0) scale(-1, 1)">%s</g>'. PHP_EOL, 750, PHP_EOL . $str);
-  } else {
-    $out .= sprintf('<g transform="rotate(180 %s %s)">%s</g>'. PHP_EOL, (750/2), (1050/4), PHP_EOL . $str);
-  }
-  $out .= '</g>' . PHP_EOL;
-
-  printf('<g id="bk">%s</g>', PHP_EOL . $out);
-?>
-</defs>
-<?php
-
-$svg = '';
-// Card face
-$svg .= sprintf('<rect stroke="none" fill="#FFF" x="%s" y="%s" width="%s" height="%s" rx="%s" />' . PHP_EOL,
-  (CRD_AB_W - CRD_FC_W) / 2, 
-  (CRD_AB_H - CRD_FC_H) / 2, 
-  CRD_FC_W, 
-  CRD_FC_H, 
-  ((CRD_AB_W - CRD_FC_W) / 2) * 1.5);
+  print('  </g>' . PHP_EOL);
+}
+echo '</g>' . PHP_EOL;
 
 
-$strk = 6;
-
-function UseAndScale($id, $x, $y, $w1, $h1, $w2, $h2) {
-  $sX = $w2 / $w1;
-  $sY = $h2 / $h1;
-
-  return sprintf('<use href="#%s" transform="scale(%s, %s) translate(%s,%s)" />' . PHP_EOL, $id, $sX, $sY, $x, $y);
+// ----- Bordered frame -----
+if (!$isBorderless) {
+  $strk = 6;
+  echo '<g id="border" fill="none" stroke-linecap="round" stroke-linejoin="round">' . PHP_EOL;
+  $k = (CARD_CUT_LINE_W-CARD_SAFE_W)/2;
+  printf('  <rect stroke="#FFF" x="%s" y="%s" width="%s" height="%s" rx="%s" stroke-width="%s" />' . PHP_EOL,
+    (CARD_BLEED_W - CARD_CUT_LINE_W + $k) / 2,
+    (CARD_BLEED_H - CARD_CUT_LINE_H + $k) / 2,
+    CARD_CUT_LINE_W - $k,
+    CARD_CUT_LINE_H - $k,
+    ((CARD_BLEED_W - CARD_CUT_LINE_W) / 2) * 1.5,
+    $k );
+  printf('  <rect class="%s" x="%s" y="%s" width="%s" height="%s" rx="%s" stroke-width="%s" />' . PHP_EOL,
+    ($card == 6 ? 'cs0' : 'cs1'),
+    (CARD_BLEED_W-CARD_SAFE_W+$strk)/2, // X
+    (CARD_BLEED_H-CARD_SAFE_H+$strk)/2, // Y
+    CARD_SAFE_W-$strk, // W
+    CARD_SAFE_H-$strk, // H
+    (CARD_BLEED_W-CARD_SAFE_W-$strk)/4, // radius
+    $strk );  // stroke-width
+  printf('  <rect stroke="#FFF" x="%s" y="%s" width="%s" height="%s" rx="%s" stroke-width="%s" />' . PHP_EOL,
+    (CARD_BLEED_W-CARD_SAFE_W+($strk*4))/2, // X
+    (CARD_BLEED_H-CARD_SAFE_H+($strk*4))/2, // Y
+    CARD_SAFE_W-($strk*4), // W
+    CARD_SAFE_H-($strk*4), // H
+    (CARD_BLEED_W-CARD_SAFE_W-($strk*7))/4, // radius
+    $strk*2 ); // stroke-width
+  echo '</g>' . PHP_EOL;
 }
 
-$svg .= UseAndScale('bk', ((CRD_AB_W-CRD_PR_W)/2)+$strk, ((CRD_AB_H-CRD_PR_H)/2)+$strk-2, CRD_FC_W, CRD_FC_H, CRD_PR_W, CRD_PR_H);
-
-
-// frame
-$svg .= '<g fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="1">' . PHP_EOL;
-
-$k = (CRD_FC_W-CRD_PR_W)/2;
-$svg .= sprintf('<rect stroke="#FFF" x="%s" y="%s" width="%s" height="%s" rx="%s" stroke-width="%s" />' . PHP_EOL, 
-  (CRD_AB_W - CRD_FC_W + $k) / 2, 
-  (CRD_AB_H - CRD_FC_H + $k) / 2, 
-  CRD_FC_W - $k, 
-  CRD_FC_H - $k, 
-  ((CRD_AB_W - CRD_FC_W) / 2) * 1.5,
-  $k);
-
-$svg .= sprintf('<rect class="%s" x="%s" y="%s" width="%s" height="%s" rx="%s" stroke-width="%s" />' . PHP_EOL, 
-  ($card == 6 ? 'cs0' : 'cs1'),
-  (CRD_AB_W-CRD_PR_W+$strk)/2, // X
-  (CRD_AB_H-CRD_PR_H+$strk)/2, // Y
-  CRD_PR_W-$strk, // W
-  CRD_PR_H-$strk, // H
-  (CRD_AB_W-CRD_PR_W-$strk)/4, // radius
-  $strk);  // stroke-width
-
-$svg .= sprintf('<rect stroke="#FFF" x="%s" y="%s" width="%s" height="%s" rx="%s" stroke-width="%s" />' . PHP_EOL, 
-  (CRD_AB_W-CRD_PR_W+($strk*4))/2, // X
-  (CRD_AB_H-CRD_PR_H+($strk*4))/2, // Y
-  CRD_PR_W-($strk*4), // W
-  CRD_PR_H-($strk*4), // H
-  (CRD_AB_W-CRD_PR_W-($strk*7))/4, // radius
-  $strk*2); // stroke-width
-
-$svg .= '</g>' . PHP_EOL;
-
-// Print it!
-echo $svg;
-
-if ($card >= 6) {
-  ?>
-
-  <!-- <g stroke="#fff" stroke-width="18" fill="none">
-    <circle cx="411" cy="561" r="308.25" />
-    <circle cx="411" cy="561" r="308.25" stroke="<?= $color1 ?>" stroke-width="6" />
-  </g> -->
-  <g stroke="none" fill="<?= $color1 ?>" opacity="0.5">
-    <g>
-      <g id="half" transform="translate(311, 140.5)">
-        <use href="#bx" />
-      </g>
-    </g>
-    <g transform="translate(411, 841.5) scale(-1, -1) translate(-411, -841.5) translate(0, 561)">
-      <g transform="translate(311, 140.5)">
-        <use href="#bx" />
-      </g>
-    </g>
-  </g>
-  <g stroke="#fff" stroke-width="6" fill="none">
-    <g>
-      <g id="half" transform="translate(311, 140.5)">
-        <use href="#bx" />
-      </g>
-    </g>
-    <g transform="translate(411, 841.5) scale(-1, -1) translate(-411, -841.5) translate(0, 561)">
-      <g transform="translate(311, 140.5)">
-        <use href="#bx" />
-      </g>
-    </g>
-  </g>
-
-  <?php
-}
-
-
+if ($debug) render_debug();
 
 ?>
 </svg>
-<?php /*
-
-*/

@@ -1,9 +1,9 @@
 <?php
 
-const CRD_AB_W = 822;
-const CRD_AB_H = 1122;
-const CRD_FC_W = 750;
-const CRD_FC_H = 1050;
+const CARD_BLEED_W = 822;
+const CARD_BLEED_H = 1122;
+const CARD_CUT_LINE_W = 750;
+const CARD_CUT_LINE_H = 1050;
 const RYL_SQ_W = 500;
 const RYL_SQ_H = 820;
 const RYL_SQ_S = 6;
@@ -13,7 +13,7 @@ const RYL_BX_W = 7;
 const RYL_BX_G = 3;
 
 $deck = [
-  "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s0", "sj", "sq", "sk", 
+  "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s0", "sj", "sq", "sk",
   "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "h9", "h0", "hj", "hq", "hk",
   "c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9", "c0", "cj", "cq", "ck",
   "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d9", "d0", "dj", "dq", "dk",
@@ -23,7 +23,7 @@ $gaps = [ 's' => 0, 'h' => 1, 'c' => 3, 'd' => 2, 'j' => 3 ];
 // Back / Spanish Red / Spanish Blue / {suggested by ChatGPT}
 $colors = [ 's' => '#000', 'h' => '#E60026', 'c' => '#0070B8', 'd' => '#00B050', 'j' => '#000' ];
 
-$classes = [ 
+$classes = [
   's' => ['skn' => '#FFDCB9', 'hir' => '#F6AD11', 'mtl' => '#B87333', 'cl1' => '#9162D5', 'cl2' => '#388E9E'],
   'h' => ['skn' => '#E6BB91', 'hir' => '#EF7C67', 'mtl' => '#FFD700', 'cl1' => '#FF6400', 'cl2' => '#FCAC05'],
   'c' => ['skn' => '#C78E63', 'hir' => '#4B371A', 'mtl' => '#D9D9D9', 'cl1' => '#11809F', 'cl2' => '#FA6706'],
@@ -52,16 +52,16 @@ function gap_line($gap, $width, $y, $color, $isroyal, $isrotate = false) {
   $r = '<g>' . PHP_EOL;
   // $r .= sprintf('<!-- Gap_Line %s %s %s %s %s %s %s -->' . PHP_EOL, $gap, $width, $y, $color, $isroyal, $z, $l);
 
-  $x = (CRD_AB_W - $width) / 2;
+  $x = (CARD_BLEED_W - $width) / 2;
   for ($i = 0; $i < $z; $i++) {
     // $r .= '<!-- ' . $i . ' ' . $x . ' -->' . PHP_EOL;
     if ($i % 2 != 0) {
-      $extra = $isrotate ? sprintf(' transform="rotate(180 %s %s)"', __(CRD_AB_W/2), __($y)) : '';
+      $extra = $isrotate ? sprintf(' transform="rotate(180 %s %s)"', __(CARD_BLEED_W/2), __($y)) : '';
       $extra .= $isroyal ? ' stroke-linecap="butt"' : sprintf(' stroke-dasharray="%s %s"', __(RYL_SQ_S/3), __(RYL_SQ_S*3));
       $r .= sprintf('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke-width="%s" stroke="%s"%s />' . PHP_EOL,
         __($x), __($y), __($x+$l), __($y), ($isroyal ? RYL_SQ_S+2 : RYL_SQ_S), $color, $extra);
     }
-    $x += $l;   
+    $x += $l;
   }
   $r .= '</g>' . PHP_EOL;
 
@@ -90,9 +90,11 @@ if (isset($opts['card'])) {
 }
 
 if ($card == 0) {
-  echo 'You must specify a card from 1 to 54' . PHP_EOL;
   if ($is_command_line) {
+    echo 'You must specify a card from 1 to 54' . PHP_EOL;
     echo 'Usage: php ' . basename(__FILE__) . ' --card=54' . PHP_EOL;
+  } else {
+    @readfile('template.svg');
   }
   exit(0);
 }
@@ -117,7 +119,7 @@ if ($card == 53) { $classes['j'] = $classes['x']; }
 
 ?>
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 <?= CRD_AB_W ?> <?= CRD_AB_H ?>" version="1.1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 <?= CARD_BLEED_W ?> <?= CARD_BLEED_H ?>" version="1.1">
 <?php
   $cf1 = 'transparent';
 ?>
@@ -161,7 +163,7 @@ foreach ($classes[$p1] as $name => $value) {
   }
   if ($card <= 52) print(PHP_EOL);
 
-  if ($card == 1) { 
+  if ($card == 1) {
     // Ace of Spades
     readfile("ace_spades.xml");
   }
@@ -217,15 +219,15 @@ foreach ($classes[$p1] as $name => $value) {
       print(PHP_EOL . '<!-- Jack -->' . PHP_EOL);
       readfile('royal_jack.xml');
       break;
-    case 'q': 
+    case 'q':
       print(PHP_EOL . '<!-- Queen -->' . PHP_EOL);
       readfile('royal_queen.xml');
       break;
-    case 'k': 
+    case 'k':
       print(PHP_EOL . '<!-- King -->' . PHP_EOL);
       readfile('royal_king.xml');
       break;
-    case 'f': 
+    case 'f':
       print(PHP_EOL . '<!-- Joker -->' . PHP_EOL);
       readfile('royal_joker.xml');
       break;
@@ -245,7 +247,7 @@ foreach ($classes[$p1] as $name => $value) {
   // <!-- Bisca values -->
   if (strpos('17890jqk', $p2) !== false) {
     switch ($p2) {
-      case '1': 
+      case '1':
         print('<path id="u" d="M41,96 L41,5 L28.1515152,5 C23.9090909,17.1242515 17.6060606,18.2140719 5,18.2140719 L5,33.744012 L24.030303,33.744012 L24.030303,96 L41,96 Z M95,96 L95,5 L82.1515152,5 C77.9090909,17.1242515 71.6060606,18.2140719 59,18.2140719 L59,33.744012 L78.030303,33.744012 L78.030303,96 L95,96 Z" />');
         break;
       case '7':
@@ -274,8 +276,8 @@ foreach ($classes[$p1] as $name => $value) {
 
 $svg = '';
 // Card face
-$i = (CRD_AB_W - CRD_FC_W) / 2;
-$svg .= '<rect stroke="none" fill="#FFF" x="' . $i . '" y="' . $i . '" width="' . CRD_FC_W . '" height="' . CRD_FC_H . '" rx="' . ($i * 1.5) . '" />' . PHP_EOL;
+$i = (CARD_BLEED_W - CARD_CUT_LINE_W) / 2;
+$svg .= '<rect stroke="none" fill="#FFF" x="' . $i . '" y="' . $i . '" width="' . CARD_CUT_LINE_W . '" height="' . CARD_CUT_LINE_H . '" rx="' . ($i * 1.5) . '" />' . PHP_EOL;
 
 // Debug only
 // $svg .= '<rect stroke="#F00" stroke-width="2" fill="none" x="66" y="66" width="690" height="990" rx="18" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7" />' . PHP_EOL;
@@ -335,16 +337,16 @@ if ( ($p2 == 'j') || ($p2 == 'q') || ($p2 == 'k') ) {
     $box_color, RYL_SQ_S);
   // Box
   $svg .= sprintf('<rect x="%s" y="%s" width="%s" height="%s" rx="%s" />' . PHP_EOL,
-    __((CRD_AB_W-RYL_SQ_W)/2), __((CRD_AB_H-RYL_SQ_H)/2), RYL_SQ_W, RYL_SQ_H, RYL_SQ_S*3);
+    __((CARD_BLEED_W-RYL_SQ_W)/2), __((CARD_BLEED_H-RYL_SQ_H)/2), RYL_SQ_W, RYL_SQ_H, RYL_SQ_S*3);
 
-  $svg .= gap_line($gap, (((RYL_SQ_W))-(RYL_SQ_S*3*2)), ((CRD_AB_H-RYL_SQ_H)/2), '#FFF', true);
-  $svg .= gap_line($gap, (((RYL_SQ_W))-(RYL_SQ_S*3*2)), (CRD_AB_H-((CRD_AB_H-RYL_SQ_H)/2)), '#FFF', true, true);
+  $svg .= gap_line($gap, (((RYL_SQ_W))-(RYL_SQ_S*3*2)), ((CARD_BLEED_H-RYL_SQ_H)/2), '#FFF', true);
+  $svg .= gap_line($gap, (((RYL_SQ_W))-(RYL_SQ_S*3*2)), (CARD_BLEED_H-((CARD_BLEED_H-RYL_SQ_H)/2)), '#FFF', true, true);
 
   $svg .= '</g>' . PHP_EOL;
 } else {
   $svg .= '<g stroke-linecap="round">' . PHP_EOL;
-  $svg .= gap_line($gap, (((RYL_SQ_W))-(RYL_SQ_S*3*2)), ((CRD_AB_H-RYL_SQ_H)/2), $colors[$p1], false);
-  $svg .= gap_line($gap, (((RYL_SQ_W))-(RYL_SQ_S*3*2)), (CRD_AB_H-((CRD_AB_H-RYL_SQ_H)/2)), $colors[$p1], false, true);
+  $svg .= gap_line($gap, (((RYL_SQ_W))-(RYL_SQ_S*3*2)), ((CARD_BLEED_H-RYL_SQ_H)/2), $colors[$p1], false);
+  $svg .= gap_line($gap, (((RYL_SQ_W))-(RYL_SQ_S*3*2)), (CARD_BLEED_H-((CARD_BLEED_H-RYL_SQ_H)/2)), $colors[$p1], false, true);
   $svg .= '</g>' . PHP_EOL;
 }
 
@@ -357,17 +359,17 @@ if ($card >= 1 && $card <= 52) {
   function face_suit($p1, $p2) {
     $r = '';
     // face
-    $r .= sprintf('<use href="#%s" transform="scale(0.8) translate(%s,%s)" />' . PHP_EOL, 
-      $p2, 82, 82);  
+    $r .= sprintf('<use href="#%s" transform="scale(0.8) translate(%s,%s)" />' . PHP_EOL,
+      $p2, 82, 82);
     // suite
-    $r .= sprintf('<use href="#%s" transform="scale(0.8) translate(%s,%s)" />' . PHP_EOL, 
+    $r .= sprintf('<use href="#%s" transform="scale(0.8) translate(%s,%s)" />' . PHP_EOL,
       $p1, 82, 190);
     return $r;
   }
   $svg .= face_suit($p1, $p2);
 
   // group
-  $svg .= sprintf('<g transform="rotate(180 %s %s)">', CRD_AB_W/2, CRD_AB_H/2) . PHP_EOL;
+  $svg .= sprintf('<g transform="rotate(180 %s %s)">', CARD_BLEED_W/2, CARD_BLEED_H/2) . PHP_EOL;
   $svg .= face_suit($p1, $p2);
   $svg .= '</g>' . PHP_EOL;
 } else if ($card == 53 || $card == 54) {
@@ -376,7 +378,7 @@ if ($card >= 1 && $card <= 52) {
     $r = '';
     $s = 'woger';
     for ($i = 0; $i < 5; $i++) {
-      $r .= sprintf('<use href="#%s" transform="scale(0.666) translate(%s,%s)" />' . PHP_EOL, 
+      $r .= sprintf('<use href="#%s" transform="scale(0.666) translate(%s,%s)" />' . PHP_EOL,
         $s[$i], 120, 120+($i*120));
     }
     return $r;
@@ -384,7 +386,7 @@ if ($card >= 1 && $card <= 52) {
   $svg .= face_joker();
 
   // group
-  $svg .= sprintf('<g transform="rotate(180 %s %s)">', CRD_AB_W/2, CRD_AB_H/2) . PHP_EOL;
+  $svg .= sprintf('<g transform="rotate(180 %s %s)">', CARD_BLEED_W/2, CARD_BLEED_H/2) . PHP_EOL;
   $svg .= face_joker();
   $svg .= '</g>' . PHP_EOL;
 }
@@ -397,48 +399,48 @@ $scl = 1.5;
 
 function pips_mirror($s) {
   $r = $s;
-  $r .= sprintf('<g transform="rotate(180 %s %s)">', CRD_AB_W/2, CRD_AB_H/2) . PHP_EOL;
+  $r .= sprintf('<g transform="rotate(180 %s %s)">', CARD_BLEED_W/2, CARD_BLEED_H/2) . PHP_EOL;
   $r .= $s;
   $r .= '</g>' . PHP_EOL;
   return $r;
 }
 
 function pips_1($fc, $scl) {
-  return sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CRD_AB_W-(100*$scl))/2), ((CRD_AB_H-(100*$scl))/2), $scl);
+  return sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CARD_BLEED_W-(100*$scl))/2), ((CARD_BLEED_H-(100*$scl))/2), $scl);
 }
 
 function pips_2($fc, $scl, $offset = 0) {
-  return pips_mirror( sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CRD_AB_W-(100*$scl))/2), ((CRD_AB_H-(100*$scl))/4)+$offset, $scl) );
+  return pips_mirror( sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CARD_BLEED_W-(100*$scl))/2), ((CARD_BLEED_H-(100*$scl))/4)+$offset, $scl) );
 }
 
 function pips_4($fc, $scl, $offset = 0) {
-  $r = sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CRD_AB_W-(100*$scl))/3), ((CRD_AB_H-(100*$scl))/4)+$offset, $scl);
-  $r .= sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CRD_AB_W-(100*$scl))/3*2), ((CRD_AB_H-(100*$scl))/4)+$offset, $scl);
+  $r = sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CARD_BLEED_W-(100*$scl))/3), ((CARD_BLEED_H-(100*$scl))/4)+$offset, $scl);
+  $r .= sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CARD_BLEED_W-(100*$scl))/3*2), ((CARD_BLEED_H-(100*$scl))/4)+$offset, $scl);
   return pips_mirror( $r );
 }
 
 function pips_6($fc, $scl) {
-  return pips_mirror( sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CRD_AB_W-(100*$scl))/3), ((CRD_AB_H-(100*$scl))/2), $scl) );
+  return pips_mirror( sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CARD_BLEED_W-(100*$scl))/3), ((CARD_BLEED_H-(100*$scl))/2), $scl) );
 }
 
 function pips_7($fc, $scl) {
-  return pips_mirror( sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CRD_AB_W-(100*$scl))/2), ((CRD_AB_H-(100*$scl))/7*2.1), $scl) );
+  return pips_mirror( sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CARD_BLEED_W-(100*$scl))/2), ((CARD_BLEED_H-(100*$scl))/7*2.1), $scl) );
 }
 
 function pips_8($fc, $scl) {
-  return pips_mirror( sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CRD_AB_W-(100*$scl))/2), ((CRD_AB_H-(100*$scl))/7*2.333), $scl) );  
+  return pips_mirror( sprintf('<use href="#%s" transform="translate(%s,%s) scale(%s)" />' . PHP_EOL, $fc, ((CARD_BLEED_W-(100*$scl))/2), ((CARD_BLEED_H-(100*$scl))/7*2.333), $scl) );
 }
 
 switch ($p2) {
   case '1':
     if ($card == 1) {
       $svg .= '<!-- Ace Of Spades -->';
-      $svg .= sprintf('<use href="#a" transform="translate(%s,%s)" />' . PHP_EOL, 
-        (CRD_AB_W-500)/2, (CRD_AB_H-500)/2);
-      $svg .= sprintf('<use href="#b" transform="translate(%s,%s)" />' . PHP_EOL, 
-        (CRD_AB_W-500)/2, ((CRD_AB_H-500)/2)-100);
-      $svg .= sprintf('<use href="#i" transform="translate(%s,%s)" />' . PHP_EOL, 
-        (CRD_AB_W-500)/2, ((CRD_AB_H-500)/2)+500);
+      $svg .= sprintf('<use href="#a" transform="translate(%s,%s)" />' . PHP_EOL,
+        (CARD_BLEED_W-500)/2, (CARD_BLEED_H-500)/2);
+      $svg .= sprintf('<use href="#b" transform="translate(%s,%s)" />' . PHP_EOL,
+        (CARD_BLEED_W-500)/2, ((CARD_BLEED_H-500)/2)-100);
+      $svg .= sprintf('<use href="#i" transform="translate(%s,%s)" />' . PHP_EOL,
+        (CARD_BLEED_W-500)/2, ((CARD_BLEED_H-500)/2)+500);
     } else {
       $scl = 5;
       $svg .= pips_1($p1, $scl);
@@ -452,7 +454,7 @@ switch ($p2) {
     $svg .= pips_2($p1, $scl);
     break;
   case '4':
-    $svg .= pips_4($p1, $scl, CRD_AB_H/13);
+    $svg .= pips_4($p1, $scl, CARD_BLEED_H/13);
     break;
   case '5':
     $svg .= pips_4($p1, $scl);
@@ -464,23 +466,23 @@ switch ($p2) {
     break;
   case '7':
     $svg .= pips_1($p1, $scl);
-    $svg .= pips_2($p1, $scl, -(CRD_AB_H/19));
-    $svg .= pips_4($p1, $scl, (CRD_AB_H/12));
+    $svg .= pips_2($p1, $scl, -(CARD_BLEED_H/19));
+    $svg .= pips_4($p1, $scl, (CARD_BLEED_H/12));
     break;
   case '8':
-    // $svg .= pips_4($p1, $scl, CRD_AB_H/19*2.25);
-    $svg .= pips_4($p1, $scl, -(CRD_AB_H/19));
+    // $svg .= pips_4($p1, $scl, CARD_BLEED_H/19*2.25);
+    $svg .= pips_4($p1, $scl, -(CARD_BLEED_H/19));
     $svg .= pips_6($p1, $scl);
     $svg .= pips_8($p1, $scl);
     break;
   case '9':
-    $svg .= pips_4($p1, $scl, CRD_AB_H/19*2.25);
-    $svg .= pips_4($p1, $scl, -(CRD_AB_H/19));
+    $svg .= pips_4($p1, $scl, CARD_BLEED_H/19*2.25);
+    $svg .= pips_4($p1, $scl, -(CARD_BLEED_H/19));
     $svg .= pips_1($p1, $scl);
     break;
   case '0':
-    $svg .= pips_4($p1, $scl, CRD_AB_H/19*2.666);
-    $svg .= pips_4($p1, $scl, -(CRD_AB_H/19));
+    $svg .= pips_4($p1, $scl, CARD_BLEED_H/19*2.666);
+    $svg .= pips_4($p1, $scl, -(CARD_BLEED_H/19));
     $svg .= pips_7($p1, $scl);
     break;
 }
@@ -496,7 +498,7 @@ if (strpos('jqk', $p2) !== false || $card > 52) {
     $box_color, 6);
   if ($card <= 52) {
     // pip in top right
-    $temp .= sprintf('<use href="#%s" fill="%s" transform="translate(%s %s)" />' . PHP_EOL, 
+    $temp .= sprintf('<use href="#%s" fill="%s" transform="translate(%s %s)" />' . PHP_EOL,
       $p1, $box_color /* $colors[$p1] */, RYL_SQ_W-RYL_BX_W-100-5, RYL_BX_W);
     // traditional royal values in top left
     $temp .= sprintf('<text fill="%s" font-size="%s" font-weight="bold" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" x="%s" y="%s">%s</text>',
@@ -505,16 +507,16 @@ if (strpos('jqk', $p2) !== false || $card > 52) {
 
   // face halves
   $svg .= '<!-- Royal face -->' . PHP_EOL;
-  $svg .= sprintf('<g transform="translate(%s,%s)">' . PHP_EOL, 
-    (CRD_AB_W-(RYL_FC_W))/2, (CRD_AB_H-RYL_FC_H)/2);
+  $svg .= sprintf('<g transform="translate(%s,%s)">' . PHP_EOL,
+    (CARD_BLEED_W-(RYL_FC_W))/2, (CARD_BLEED_H-RYL_FC_H)/2);
   $svg .= $temp; // face 1st half 1/2
   // alternate A if there
   $svg .= sprintf('<use href="#alt_%s" fill="none" stroke="%s" stroke-width="%s" />' . PHP_EOL,
     ($card <= 52 ? $p1 : '1'), $box_color, 6);
   $svg .= '</g>' . PHP_EOL;
-  $svg .= sprintf('<g transform="rotate(180 %s %s) translate(%s,%s)">' . PHP_EOL, 
-    CRD_AB_W/2, CRD_AB_H/2, (CRD_AB_W-RYL_FC_W)/2, (CRD_AB_H-RYL_FC_H)/2);
-  $svg .= $temp; // face 2nd half 1/2  
+  $svg .= sprintf('<g transform="rotate(180 %s %s) translate(%s,%s)">' . PHP_EOL,
+    CARD_BLEED_W/2, CARD_BLEED_H/2, (CARD_BLEED_W-RYL_FC_W)/2, (CARD_BLEED_H-RYL_FC_H)/2);
+  $svg .= $temp; // face 2nd half 1/2
   // alternate B if there
   $svg .= sprintf('<use href="#alt_%s" fill="none" stroke="%s" stroke-width="%s" />' . PHP_EOL,
     ($card <= 52 ? $p1 : '2'), $box_color, 6);
@@ -531,7 +533,7 @@ if (strpos('17890jqk', $p2) !== false) {
   function bisca_val($val) {
     $s = $r = sprintf('<use href="#%s" transform="translate(%s,%s) scale(0.666)" />' . PHP_EOL,
       $val, 72, 250);
-    $r .= sprintf('<g transform="rotate(180 %s %s)">', CRD_AB_W/2, CRD_AB_H/2) . PHP_EOL;
+    $r .= sprintf('<g transform="rotate(180 %s %s)">', CARD_BLEED_W/2, CARD_BLEED_H/2) . PHP_EOL;
     $r .= $s;
     $r .= '</g>' . PHP_EOL;
     return $r;

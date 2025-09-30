@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Bisca-Sueca Playing Cards</title>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
-      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-      crossorigin="anonymous"
-    />
+      href="https://cdn.jsdelivr.net/gh/silvinor/bootlace@5.3.8/dist/css/bootlace.min.css"
+      integrity="sha384-9L4CG7bj17EWwf9367x4D4fT62Z55bazBNq+gbrkgoxr0fzXCiKHb1GPxL1KukdQ"
+      crossorigin="anonymous">
   </head>
   <style>
-    body {
-      background-color: #7777;
+    @media (prefers-color-scheme: light) {
+      body { background-color: #CCC; }
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #333; }
     }
   </style>
   <body>
@@ -21,17 +23,12 @@
       <h1 class="text-center display-1">Bisca-Sueca Playing Cards</h1>
       <div class="text-center">
 
-        <!--
-        <img width="411" height="561" src="./card.php" alt="" class="img-thumbnail shadow" style="background:#7B97B3">
-
-        <br> -->
-
         <?php for ($i = 1; $i <= 54; $i++) { ?>
-        <a href="card.php?card=<?= $i ?>" target="card"><img width="164" height="224" src="card.php?card=<?= $i ?>" alt="<?= $i ?>"></a>
+          <a href="card.php?card=<?= $i ?>" target="card"><img width="164" height="224" src="card.php?card=<?= $i ?>" alt="<?= $i ?>"></a>
         <?php } ?>
 
-        <?php for ($i = 1; $i <= 8; $i++) { ?>
-        <a href="back.php?card=<?= $i ?>" target="card"><img width="164" height="224" src="back.php?card=<?= $i ?>" alt="<?= $i ?>"></a>
+        <?php for ($i = 1; $i <= 10; $i++) { ?>
+          <a href="back.php?card=<?= $i ?>" target="card"><img width="164" height="224" src="back.php?card=<?= $i ?>" alt="<?= $i ?>"></a>
         <?php } ?>
 
       </div>
