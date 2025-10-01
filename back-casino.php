@@ -4,7 +4,7 @@ global $semaphore;
 include_once 'common.php';
 
 function lib_validate_casino($card) {
-  return ($card >= 1) && ($card <= 2);
+  return ($card >= 1) && ($card <= 3);
 }
 
 function lib_comment_casino($card = 1) {
@@ -12,9 +12,14 @@ function lib_comment_casino($card = 1) {
 }
 
 function lib_style_casino($card = 1) {
+  switch ($card) {
+    case 2:  $c = COLOR1; break;
+    case 3:  $c = COLOR2; break;
+    default: $c = COLOR4; break;
+  }
 ?>
-  .cf1 { fill: <?= ($card % 2 !== 0) ? COLOR1 : COLOR2 ?>; }
-  .cs1 { stroke: <?= ($card % 2 !== 0) ? COLOR1 : COLOR2 ?>; }
+  .cf1 { fill: <?= $c ?>; }
+  .cs1 { stroke: <?= $c ?>; }
 <?php
 }
 

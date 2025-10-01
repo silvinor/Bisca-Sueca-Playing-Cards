@@ -21,7 +21,7 @@ function lib_style_bisca($card = 1) {
   global $color;
 ?>
   .cf0 { fill: <?= $color ?>; }
-  .cs0 { stroke: <?= $color ?>; }
+  .cs0, .cs1 { stroke: <?= $color ?>; }
 <?php
 }
 
