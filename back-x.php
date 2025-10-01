@@ -4,7 +4,7 @@ global $semaphore;
 include_once 'common.php';
 
 function lib_validate_x($card) {
-  return ($card >= 1) && ($card <= 2);
+  return ($card >= 1) && ($card <= 4);
 }
 
 function lib_comment_x($card = 1) {
@@ -12,9 +12,15 @@ function lib_comment_x($card = 1) {
 }
 
 function lib_style_x($card = 1) {
+  switch ($card) {
+    case 2:  $c = COLOR1; break;
+    case 3:  $c = COLOR2; break;
+    case 4:  $c = COLOR3; break;
+    default: $c = COLOR4; break;
+  }
 ?>
-  .cf1 { fill: <?= ($card % 2 !== 0) ? COLOR1 : COLOR2 ?>; }
-  .cs1 { stroke: <?= ($card % 2 !== 0) ? COLOR1 : COLOR2 ?>; }
+  .cf1 { fill: <?= $c ?>; }
+  .cs1 { stroke: <?= $c ?>; }
 <?php
 }
 

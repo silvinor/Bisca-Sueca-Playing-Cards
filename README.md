@@ -3,11 +3,11 @@
 Graphics for the Bisca/Sueca Playing Cards set.
 
 <p align="center">
-    <img src="./dist/card-1.jpg" width="125" height="187">
+    <img src="./dist/card-01.jpg" width="125" height="187">
     <img src="./dist/card-38.jpg" width="125" height="187">
     <img src="./dist/card-50.jpg" width="125" height="187">
     <img src="./dist/card-26.jpg" width="125" height="187">
-    <img src="./dist/back-6.jpg" width="125" height="187">
+    <img src="./dist/back-01.jpg" width="125" height="187">
 </p>
 
 ## Why?

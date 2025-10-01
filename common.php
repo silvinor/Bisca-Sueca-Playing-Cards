@@ -65,7 +65,7 @@ $is_command_line = php_sapi_name() === 'cli' || defined('STDIN');
 if ($is_command_line) {
   // command line
   $opts = array_change_key_case( getopt('', ['card:', 'debug::']), CASE_LOWER );
-  $opts['debug'] = ($opts['debug'] === false) ? true : is_true($opts['debug']);
+  $opts['debug'] = (isset($opts['debug']) ? ($opts['debug'] === false) ? true : is_true($opts['debug']) : false);
 } else {
   // html get or put
   $opts = array_change_key_case( $_REQUEST, CASE_LOWER );

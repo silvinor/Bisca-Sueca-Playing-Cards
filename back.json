@@ -1,12 +1,15 @@
 {
-  "1":  { "lib": "casino", "ofs": 0,  "mir": true },
-  "2":  { "lib": "casino", "ofs": 0,  "mir": true },
-  "3":  { "lib": "x"     , "ofs": -2, "mir": true },
-  "4":  { "lib": "x"     , "ofs": -2, "mir": true },
-  "5":  { "lib": "pips"  , "ofs": -4 },
-  "6":  { "lib": "bisca" , "ofs": -5, "mir": true },
-  "7":  { "lib": "bisca" , "ofs": -5, "mir": true },
-  "8":  { "lib": "bisca" , "ofs": -5, "mir": true },
-  "9":  { "lib": "casino", "ofs": -8,              "bls": true },
-  "10": { "lib": "casino", "ofs": -8,              "bls": true }
+  "1":  { "lib": "hex",    "ofs": 0 },
+  "2":  { "lib": "hex",    "ofs": 0 },
+  "3":  { "lib": "hex",    "ofs": 0 },
+  "4":  { "lib": "casino", "ofs": -3,  "mir": true },
+  "5":  { "lib": "casino", "ofs": -3,  "mir": true },
+  "6":  { "lib": "casino", "ofs": -3,  "mir": true },
+  "7":  { "lib": "bisca",  "ofs": -6,  "mir": true },
+  "8":  { "lib": "bisca",  "ofs": -6,  "mir": true },
+  "9":  { "lib": "bisca",  "ofs": -6,  "mir": true },
+  "10": { "lib": "x",      "ofs": -9,  "mir": true },
+  "11": { "lib": "x",      "ofs": -9,  "mir": true },
+  "12": { "lib": "x",      "ofs": -9,  "mir": true },
+  "13": { "lib": "pips",   "ofs": -12 }
 }
