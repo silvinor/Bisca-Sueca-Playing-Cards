@@ -10,7 +10,10 @@ const RYL_SQ_S = 6;
 const RYL_FC_W = 490;
 const RYL_FC_H = 810;
 const RYL_BX_W = 7;
-const RYL_BX_G = 3;
+// const RYL_BX_G = 3;
+const ACE_W = 500;
+const ACE_H = 500;
+const ACE_INF_H = 100;
 
 $deck = [
   "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s0", "sj", "sq", "sk",
@@ -252,6 +255,11 @@ foreach ($classes[$p1] as $name => $value) {
     }
     print(PHP_EOL);
   }
+
+  // Watermark
+  if ( ($card == 1) || ($p2 == 'j') || ($p2 == 'q') || ($p2 == 'k') ) {
+    readfile(PARTS_FOLDER . 'watermark.xml');
+  }
 ?>
 </defs>
 <?php
@@ -304,6 +312,36 @@ function darkenHtmlColor(string $colour, float $darkenAlpha = 0.5) {
   $hexOut = sprintf('%02X%02X%02X', $rOut, $gOut, $bOut);
 
   return $hadHash ? ('#' . $hexOut) : $hexOut;
+}
+
+// Watermark
+if ( ($card == 1) || ($p2 == 'j') || ($p2 == 'q') || ($p2 == 'k') ) {
+  $svg .= '<!-- Watermark -->' . PHP_EOL;
+  $svg .= sprintf('<g transform="translate(%s,%s)" opacity="0.1">',
+    (CARD_BLEED_W-RYL_SQ_W)/2, (CARD_BLEED_H-RYL_SQ_H)/2 );
+  $w = RYL_SQ_W/2;
+  $h = RYL_SQ_H/4;
+  for ($i = 0; $i < 2; $i++) {
+    for ($j = 0; $j < 4; $j++) {
+      $x1 = $i * $w;
+      $y1 = $j * $h;
+      $svg .= sprintf('<g transform="translate(%s,%s)">', $x1, $y1 );
+      $xatr = '';
+      $q = (($j % 2) * 2) + $i + 1;
+      switch ($q) {
+        case 2: $xatr .= ' transform="translate('.$w.',0) scale(-1,1)"'; break;
+        case 3: $xatr .= ' transform="translate(0,'.$h.') scale(1,-1)"'; break;
+        case 4: $xatr .= ' transform="translate('.$w.','.$h.') scale(-1,-1)"'; break;
+      }
+      $svg .= '<use href="#wm"' . $xatr . ' /></g>';
+    }
+  }
+  $r = RYL_SQ_S * 3;
+  if ($card == 1) $r *= 3;
+  $sw = $r * 0.75;
+  $svg .= sprintf('<rect stroke="#FFF" x="%s" y="%s" width="%s" height="%s" rx="%s" fill="none" stroke-width="%s" />',
+    0, 0, RYL_SQ_W, RYL_SQ_H, $r, $sw );
+  $svg .= '</g>' . PHP_EOL;
 }
 
 // Royalty >> Jack, Queen, King
@@ -413,12 +451,15 @@ switch ($p2) {
   case '1':
     if ($card == 1) {
       $svg .= '<!-- Ace Of Spades -->';
+      // Pip
       $svg .= sprintf('<use href="#a" transform="translate(%s,%s)" />' . PHP_EOL,
-        (CARD_BLEED_W-500)/2, (CARD_BLEED_H-500)/2);
+        (CARD_BLEED_W-ACE_W)/2, (CARD_BLEED_H-ACE_H)/2 );
+      // Bisca Word
       $svg .= sprintf('<use href="#b" transform="translate(%s,%s)" />' . PHP_EOL,
-        (CARD_BLEED_W-500)/2, ((CARD_BLEED_H-500)/2)-100);
+        (CARD_BLEED_W-ACE_W)/2, ((CARD_BLEED_H-ACE_INF_H)/2)-((RYL_SQ_H-ACE_INF_H)/2)+(RYL_BX_W*3) );
+      // Copyright
       $svg .= sprintf('<use href="#i" transform="translate(%s,%s)" />' . PHP_EOL,
-        (CARD_BLEED_W-500)/2, ((CARD_BLEED_H-500)/2)+500);
+        (CARD_BLEED_W-ACE_W)/2, ((CARD_BLEED_H-ACE_INF_H)/2)+((RYL_SQ_H-ACE_INF_H)/2)-(RYL_BX_W*3) );
     } else {
       $scl = 5;
       $svg .= pips_1($p1, $scl);
