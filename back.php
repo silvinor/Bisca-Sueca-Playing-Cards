@@ -12,7 +12,7 @@ include_once 'common.php';
 
 // ---------- Code starts here ---------
 
-$x = file_get_contents("back.json");
+$x = file_get_contents(PARTS_FOLDER . "back.json");
 $backs = json_decode($x, true);
 if (json_last_error() !== JSON_ERROR_NONE) {
   echo "Error decoding JSON: " . json_last_error_msg() . PHP_EOL;
@@ -38,7 +38,7 @@ if (!isset($backs[$card])) {
   exit(1);
 }
 
-$fn = isset($backs[$card]['lib']) ? 'back-'.$backs[$card]['lib'].'.php' : false;
+$fn = isset($backs[$card]['lib']) ? (PARTS_FOLDER.'back-'.$backs[$card]['lib'].'.php') : false;
 if (($fn !== false) && file_exists($fn) && is_file($fn)) {
   @include_once $fn;
 } else {

@@ -22,6 +22,8 @@ const COLOR2 = '#E60026'; // Spanish Red
 const COLOR3 = '#00B050'; // High contrast vs. others, as suggested by ChatGTP
 const COLOR4 = '#7851a9'; // Royal Purple
 
+const PARTS_FOLDER = 'parts/';
+
 /* ---------- Functions ---------- */
 
 function is_true($val) {

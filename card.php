@@ -1,9 +1,9 @@
 <?php
+global $semaphore, $card, $debug;
+$semaphore = __FILE__;
 
-const CARD_BLEED_W = 822;
-const CARD_BLEED_H = 1122;
-const CARD_CUT_LINE_W = 750;
-const CARD_CUT_LINE_H = 1050;
+include_once 'common.php';
+
 const RYL_SQ_W = 500;
 const RYL_SQ_H = 820;
 const RYL_SQ_S = 6;
@@ -70,35 +70,17 @@ function gap_line($gap, $width, $y, $color, $isroyal, $isrotate = false) {
 
 // ---------- Code starts here ---------
 
-$card = 0;
-$is_command_line = php_sapi_name() === 'cli' || defined('STDIN');
-if ($is_command_line) {
-  // command line
-  $opts = array_change_key_case( getopt('', ['card:']), CASE_LOWER );
-} else {
-  $opts = array_change_key_case( $_REQUEST, CASE_LOWER );
-}
-
-if (isset($opts['card'])) {
-  $i = $opts['card'];
-  if (is_numeric($i)) {
-    $i = intval($i);
-    if ($i >= 1 && $i <= 54) {
-      $card = $i;
-    }
-  }
-}
+/* Note: `$card` is populated in `common.php` */
 
 if ($card == 0) {
   if ($is_command_line) {
     echo 'You must specify a card from 1 to 54' . PHP_EOL;
     echo 'Usage: php ' . basename(__FILE__) . ' --card=54' . PHP_EOL;
   } else {
-    @readfile('template.svg');
+    @readfile(PARTS_FOLDER . 'template.svg');
   }
   exit(0);
 }
-
 
 header('Content-Type: image/svg+xml; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
@@ -165,7 +147,7 @@ foreach ($classes[$p1] as $name => $value) {
 
   if ($card == 1) {
     // Ace of Spades
-    readfile("ace_spades.xml");
+    readfile(PARTS_FOLDER . 'ace-spades.xml');
   }
 
   // <!-- Value -->
@@ -217,19 +199,19 @@ foreach ($classes[$p1] as $name => $value) {
   switch ($temp) {
     case 'j':
       print(PHP_EOL . '<!-- Jack -->' . PHP_EOL);
-      readfile('royal_jack.xml');
+      readfile(PARTS_FOLDER . 'royal-jack.xml');
       break;
     case 'q':
       print(PHP_EOL . '<!-- Queen -->' . PHP_EOL);
-      readfile('royal_queen.xml');
+      readfile(PARTS_FOLDER . 'royal-queen.xml');
       break;
     case 'k':
       print(PHP_EOL . '<!-- King -->' . PHP_EOL);
-      readfile('royal_king.xml');
+      readfile(PARTS_FOLDER . 'royal-king.xml');
       break;
     case 'f':
       print(PHP_EOL . '<!-- Joker -->' . PHP_EOL);
-      readfile('royal_joker.xml');
+      readfile(PARTS_FOLDER . 'royal-joker.xml');
       break;
   }
 
@@ -278,10 +260,6 @@ $svg = '';
 // Card face
 $i = (CARD_BLEED_W - CARD_CUT_LINE_W) / 2;
 $svg .= '<rect stroke="none" fill="#FFF" x="' . $i . '" y="' . $i . '" width="' . CARD_CUT_LINE_W . '" height="' . CARD_CUT_LINE_H . '" rx="' . ($i * 1.5) . '" />' . PHP_EOL;
-
-// Debug only
-// $svg .= '<rect stroke="#F00" stroke-width="2" fill="none" x="66" y="66" width="690" height="990" rx="18" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7" />' . PHP_EOL;
-// $svg .= '<text x="411" y="561" text-anchor="middle" dominant-baseline="middle" font-size="100" fill="' . $colors[$p1] . '">' . strtoupper($place) . '</text>' . PHP_EOL;
 
 function darkenHtmlColor(string $colour, float $darkenAlpha = 0.5) {
   $trimmed = trim($colour);
@@ -567,6 +545,8 @@ if (strpos('17890jqk', $p2) !== false) {
 
 // Print it!
 echo $svg;
+
+if ($debug) render_debug();
 
 ?>
 </svg>
