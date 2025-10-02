@@ -109,6 +109,10 @@ if ($card == 53) { $classes['j'] = $classes['x']; }
   $cf1 = 'transparent';
 ?>
 <style>
+  @import url("https://fonts.googleapis.com/css2?family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800");
+  @import url("https://fonts.googleapis.com/css2?family=Ubuntu+Sans+Mono:ital,wght@0,400..700;1,400..700");
+  text { font-family: "Ubuntu Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  .monospace { font-family: "Ubuntu Sans Mono", monospace; }
   .cf1 { fill: <?= $cf1 ?>; }
 <?php
 foreach ($classes[$p1] as $name => $value) {
@@ -520,8 +524,8 @@ if (strpos('jqk', $p2) !== false || $card > 52) {
     $temp .= sprintf('<use href="#%s" fill="%s" transform="translate(%s %s)" />' . PHP_EOL,
       $p1, $box_color /* $colors[$p1] */, RYL_SQ_W-RYL_BX_W-100-5, RYL_BX_W);
     // traditional royal values in top left
-    $temp .= sprintf('<text fill="%s" font-size="%s" font-weight="bold" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" x="%s" y="%s">%s</text>',
-      $box_color, 28, 5, 28, ($p2 == 'j' ? '11' : ($p2 == 'q' ? '10' : ($p2 == 'k' ? '12' : ''))));
+    $temp .= sprintf('<text fill="%s" font-size="%s" font-weight="bold" x="%s" y="%s">%s</text>',
+      $box_color, 32, 5, 32, ($p2 == 'j' ? '11' : ($p2 == 'q' ? '10' : ($p2 == 'k' ? '12' : ''))));
   }
 
   // face halves
