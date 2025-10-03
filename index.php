@@ -46,7 +46,7 @@
             class="clickable" />
         <?php } ?>
 
-        <?php for ($i = 1; $i <= 13; $i++) { ?>
+        <?php for ($i = 1; $i <= 16; $i++) { ?>
           <img width="164" height="224" src="back.php?card=<?= $i ?>" alt="<?= $i ?>"
              data-bs-toggle="modal" data-bs-target="#exampleModal"
              class="clickable" />

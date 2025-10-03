@@ -4,7 +4,12 @@ global $semaphore;
 include_once 'common.php';
 
 function lib_validate_casino($card) {
-  return ($card >= 1) && ($card <= 3);
+  global $border_scale_function, $border_draw_function;
+  if ($card > 3) {
+    $border_scale_function = 'scale_to_bleed_line';
+    $border_draw_function = false;
+  }
+  return ($card >= 1) && ($card <= 6);
 }
 
 function lib_comment_casino($card = 1) {
@@ -13,8 +18,12 @@ function lib_comment_casino($card = 1) {
 
 function lib_style_casino($card = 1) {
   switch ($card) {
-    case 2:  $c = COLOR1; break;
-    case 3:  $c = COLOR2; break;
+    case 2:
+    case 5:
+      $c = COLOR1; break;
+    case 3:
+    case 6:
+      $c = COLOR2; break;
     default: $c = COLOR4; break;
   }
 ?>

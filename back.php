@@ -3,6 +3,7 @@ global $semaphore, $card, $debug;
 $semaphore = __FILE__;
 
 include_once 'common.php';
+include_once 'php-svg.php';
 
 // **********************************************************************
 // ----- General Notes -----
@@ -56,7 +57,7 @@ if (function_exists($fu)) {
   echo "Library `{$fn}` does not have a validation function." . PHP_EOL;
   exit(4);
 }
-$isBorderless = isset($backs[$card]['bls']) ? !!$backs[$card]['bls'] : false;
+// $isBorderless = isset($backs[$card]['bls']) ? !!$backs[$card]['bls'] : false;
 $isMirrored = isset($backs[$card]['mir']) ? !!$backs[$card]['mir'] : false;
 
 header('Content-Type: image/svg+xml; charset=UTF-8');
@@ -96,21 +97,28 @@ printf('<rect id="print" stroke="none" fill="#FFF" x="%s" y="%s" width="%s" heig
 
 // ----- Back -----
 
-print('<g id="back" ');
-if ($isBorderless) {
-  $enlg = 1.05; // enlarge to encroach on the cut-line
-  $ox = (CARD_BLEED_W - (CARD_CUT_LINE_W * $enlg)) / 2;
-  $oy = (CARD_BLEED_H - (CARD_CUT_LINE_H * $enlg)) / 2;
-  printf('transform="translate(%s,%s) scale(%3$s,%3$s)"',
-    $ox, $oy, $enlg );
-} else {
+// new $isBorderless handling
+
+function scale_to_safe_line() {
   $ox = (CARD_BLEED_W - CARD_SAFE_W) / 2;
   $oy = (CARD_BLEED_H - CARD_SAFE_H) / 2;
   $sx = round(CARD_SAFE_W / CARD_CUT_LINE_W, 5);
   $sy = round(CARD_SAFE_H / CARD_CUT_LINE_H, 5);
-  printf('transform="translate(%s,%s) scale(%s,%s)"',
-    $ox, $oy, $sx, $sy );
+  return sprintf('transform="translate(%s,%s) scale(%s,%s)"', $ox, $oy, $sx, $sy );
 }
+
+function scale_to_bleed_line() {
+  $enlg = 1.05; // enlarge to encroach on the cut-line
+  $ox = (CARD_BLEED_W - (CARD_CUT_LINE_W * $enlg)) / 2;
+  $oy = (CARD_BLEED_H - (CARD_CUT_LINE_H * $enlg)) / 2;
+  return sprintf('transform="translate(%s,%s) scale(%3$s,%3$s)"', $ox, $oy, $enlg );
+}
+
+global $border_scale_function;
+if (!isset($border_scale_function)) $border_scale_function = 'scale_to_safe_line';
+
+print('<g id="back" ');
+print( $border_scale_function() );
 print('>' . PHP_EOL);
 for ($i = 0; $i < 2; $i++) {
   printf('  <g id="half_%s"', ($i+1));
@@ -164,34 +172,79 @@ echo '</g>' . PHP_EOL;
 
 
 // ----- Bordered frame -----
-if (!$isBorderless) {
-  $strk = 6;
+
+function draw_border_frame() {
+  global $card;
+
+  $s = 6;
   echo '<g id="border" fill="none" stroke-linecap="round" stroke-linejoin="round">' . PHP_EOL;
-  $k = (CARD_CUT_LINE_W-CARD_SAFE_W)/2;
-  printf('  <rect stroke="#FFF" x="%s" y="%s" width="%s" height="%s" rx="%s" stroke-width="%s" />' . PHP_EOL,
+  $k = (CARD_CUT_LINE_W - CARD_SAFE_W ) / 2;
+  $r = 38 - ($k / 2);
+  $wf = 'fill="#FFF" stroke="#FFF" stroke-width="0.5"';
+  $ws = sprintf('fill="none" stroke="#FFF" stroke-width="%s"', $k);
+
+  print svg_attrs(svg_rect(
     (CARD_BLEED_W - CARD_CUT_LINE_W + $k) / 2,
     (CARD_BLEED_H - CARD_CUT_LINE_H + $k) / 2,
     CARD_CUT_LINE_W - $k,
     CARD_CUT_LINE_H - $k,
-    ((CARD_BLEED_W - CARD_CUT_LINE_W) / 2) * 1.5,
-    $k );
-  printf('  <rect class="%s" x="%s" y="%s" width="%s" height="%s" rx="%s" stroke-width="%s" />' . PHP_EOL,
-    ($card == 6 ? 'cs0' : 'cs1'),
-    (CARD_BLEED_W-CARD_SAFE_W+$strk)/2, // X
-    (CARD_BLEED_H-CARD_SAFE_H+$strk)/2, // Y
-    CARD_SAFE_W-$strk, // W
-    CARD_SAFE_H-$strk, // H
-    (CARD_BLEED_W-CARD_SAFE_W-$strk)/4, // radius
-    $strk );  // stroke-width
-  printf('  <rect stroke="#FFF" x="%s" y="%s" width="%s" height="%s" rx="%s" stroke-width="%s" />' . PHP_EOL,
-    (CARD_BLEED_W-CARD_SAFE_W+($strk*4))/2, // X
-    (CARD_BLEED_H-CARD_SAFE_H+($strk*4))/2, // Y
-    CARD_SAFE_W-($strk*4), // W
-    CARD_SAFE_H-($strk*4), // H
-    (CARD_BLEED_W-CARD_SAFE_W-($strk*7))/4, // radius
-    $strk*2 ); // stroke-width
+    $r
+  ), $ws );
+
+  $x = 38 + 3;
+  print svg_attrs(svg_rounded_corner_mask(
+    (CARD_BLEED_W - CARD_SAFE_W) / 2,
+    (CARD_BLEED_H - CARD_SAFE_H) / 2,
+    $x,
+    1
+  ), $wf );
+  print svg_attrs(svg_rounded_corner_mask(
+    ((CARD_BLEED_W - CARD_SAFE_W) / 2) + CARD_SAFE_W - $x,
+    (CARD_BLEED_H - CARD_SAFE_H) / 2,
+    $x,
+    2
+  ), $wf );
+  print svg_attrs(svg_rounded_corner_mask(
+    (CARD_BLEED_W - CARD_SAFE_W) / 2,
+    ((CARD_BLEED_H - CARD_SAFE_H) / 2) + CARD_SAFE_H - $x,
+    $x,
+    3
+  ), $wf );
+  print svg_attrs(svg_rounded_corner_mask(
+    ((CARD_BLEED_W - CARD_SAFE_W) / 2) + CARD_SAFE_W - $x,
+    ((CARD_BLEED_H - CARD_SAFE_H) / 2) + CARD_SAFE_H - $x,
+    $x,
+    4
+  ), $wf );
+
+  print svg_attrs(svg_rect(
+    (CARD_BLEED_W - CARD_SAFE_W + $s) / 2,
+    (CARD_BLEED_H - CARD_SAFE_H + $s) / 2,
+    CARD_SAFE_W - $s,
+    CARD_SAFE_H - $s,
+    38
+  ), sprintf('class="%s" stroke-width="%s"',
+    'cs1',
+    $s
+  ) );
+
+  $z = $s * 2;
+  print svg_attrs(svg_rect(
+    ((CARD_BLEED_W - CARD_SAFE_W + $z) / 2) + $s,
+    ((CARD_BLEED_H - CARD_SAFE_H + $z) / 2) + $s,
+    CARD_SAFE_W - ($z + ($s * 2)),
+    CARD_SAFE_H - ($z + ($s * 2)),
+    38 - ($s + ($s / 2)),
+  ), sprintf('fill="none" stroke="#FFF" stroke-width="%s"',
+    $z
+  ) );
+
   echo '</g>' . PHP_EOL;
 }
+
+global $border_draw_function; // set to false in the library file if you want to skip this
+if (!isset($border_draw_function)) { $border_draw_function = 'draw_border_frame'; } // default
+if (!empty($border_draw_function) && !is_null($border_draw_function)) $border_draw_function();
 
 if ($debug) render_debug();
 
