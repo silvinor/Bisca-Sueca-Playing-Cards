@@ -370,48 +370,97 @@ if ( ($p2 == 'j') || ($p2 == 'q') || ($p2 == 'k') ) {
 }
 
 // ----------------------------------------------------------------------
+// Card face, suite and values
 // ----------------------------------------------------------------------
+
+$x0 = 82;
+$y0 = 122;
 
 $svg .= '<g fill="' . $colors[$p1] . '">' . PHP_EOL;
 if ($card >= 1 && $card <= 52) {
-
-  function face_suit($p1, $p2) {
+  function face_suit($p1, $p2, $xo, $yo) {
     $r = '';
     // face
     $r .= sprintf('<use href="#%s" transform="scale(0.8) translate(%s,%s)" />' . PHP_EOL,
-      $p2, 82, 82);
+      $p2, $xo, $yo);
     // suite
     $r .= sprintf('<use href="#%s" transform="scale(0.8) translate(%s,%s)" />' . PHP_EOL,
-      $p1, 82, 190);
+      $p1, $xo, $yo+108);
     return $r;
   }
-  $svg .= face_suit($p1, $p2);
-
-  // group
+  // top half
+  $svg .= face_suit($p1, $p2, $x0, $y0);
+  // bottom half
   $svg .= sprintf('<g transform="rotate(180 %s %s)">', CARD_BLEED_W/2, CARD_BLEED_H/2) . PHP_EOL;
-  $svg .= face_suit($p1, $p2);
+  $svg .= face_suit($p1, $p2, $x0, $y0);
   $svg .= '</g>' . PHP_EOL;
 } else if ($card == 53 || $card == 54) {
-
-  function face_joker() {
+  function face_joker($xo, $yo) {
     $r = '';
     $s = 'woger';
+    $x1 = $xo * 1.333;
+    $y1 = $yo * 1.25;
+    $y2 = $yo * 0.9;
     for ($i = 0; $i < 5; $i++) {
       $r .= sprintf('<use href="#%s" transform="scale(0.666) translate(%s,%s)" />' . PHP_EOL,
-        $s[$i], 120, 120+($i*120));
+        $s[$i], $x1, $y1+($i*$y2));
     }
     return $r;
   }
-  $svg .= face_joker();
-
-  // group
+  // top half
+  $svg .= face_joker($x0, $y0);
+  // bottom half
   $svg .= sprintf('<g transform="rotate(180 %s %s)">', CARD_BLEED_W/2, CARD_BLEED_H/2) . PHP_EOL;
-  $svg .= face_joker();
+  $svg .= face_joker($x0, $y0);
   $svg .= '</g>' . PHP_EOL;
 }
 $svg .= '</g>' . PHP_EOL;
 
-// Pips
+// ----------------------------------------------------------------------
+// Bisca Values
+// ----------------------------------------------------------------------
+
+if ((strpos('17890jqk', $p2) !== false) && ($card <= 52)) {
+  $svg .= '<g fill="' . $colors[$p1] . '" opacity="0.25">' . PHP_EOL;
+
+  function bisca_val($val, $xo, $yo) {
+    $s = $r = sprintf('<use href="#%s" transform="translate(%s,%s) scale(0.666)" />' . PHP_EOL,
+      $val, $xo-11, $yo+158); // 72, 250);
+    $r .= sprintf('<g transform="rotate(180 %s %s)">', CARD_BLEED_W/2, CARD_BLEED_H/2) . PHP_EOL;
+    $r .= $s;
+    $r .= '</g>' . PHP_EOL;
+    return $r;
+  }
+
+  switch ($p2) {
+    case '1':
+      $svg .= bisca_val('u', $x0, $y0);
+      break;
+    case '7':
+      $svg .= bisca_val('v', $x0, $y0);
+      break;
+    case '8':
+    case '9':
+    case '0':
+      $svg .= bisca_val('t', $x0, $y0);
+      break;
+    case 'k':
+      $svg .= bisca_val('x', $x0, $y0);
+      break;
+    case 'j':
+      $svg .= bisca_val('y', $x0, $y0);
+      break;
+    case 'q':
+      $svg .= bisca_val('z', $x0, $y0);
+      break;
+  }
+  $svg .= '</g>' . PHP_EOL;
+}
+
+// ----------------------------------------------------------------------
+// Suite Pips
+// ----------------------------------------------------------------------
+
 if ($card >= 53) $p2 = 'w';
 $svg .= '<g fill="' . $colors[$p1] . '">' . PHP_EOL;
 $scl = 1.5;
@@ -542,48 +591,6 @@ if (strpos('jqk', $p2) !== false || $card > 52) {
   // alternate B if there
   $svg .= sprintf('<use href="#alt_%s" fill="none" stroke="%s" stroke-width="%s" />' . PHP_EOL,
     ($card <= 52 ? $p1 : '2'), $box_color, 6);
-  $svg .= '</g>' . PHP_EOL;
-}
-
-// ----------------------------------------------------------------------
-// Bisca Values
-// ----------------------------------------------------------------------
-
-if (strpos('17890jqk', $p2) !== false) {
-  $svg .= '<g fill="' . $colors[$p1] . '" opacity="0.333">' . PHP_EOL;
-
-  function bisca_val($val) {
-    $s = $r = sprintf('<use href="#%s" transform="translate(%s,%s) scale(0.666)" />' . PHP_EOL,
-      $val, 72, 250);
-    $r .= sprintf('<g transform="rotate(180 %s %s)">', CARD_BLEED_W/2, CARD_BLEED_H/2) . PHP_EOL;
-    $r .= $s;
-    $r .= '</g>' . PHP_EOL;
-    return $r;
-  }
-
-  switch ($p2) {
-    case '1':
-      $svg .= bisca_val('u');
-      break;
-    case '7':
-      $svg .= bisca_val('v');
-      break;
-    case '8':
-    case '9':
-    case '0':
-      $svg .= bisca_val('t');
-      break;
-    case 'k':
-      $svg .= bisca_val('x');
-      break;
-    case 'j':
-      $svg .= bisca_val('y');
-      break;
-    case 'q':
-      $svg .= bisca_val('z');
-      break;
-  }
-
   $svg .= '</g>' . PHP_EOL;
 }
 

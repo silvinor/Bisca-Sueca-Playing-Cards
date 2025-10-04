@@ -27,6 +27,6 @@ Graphics for the Bisca/Sueca Playing Cards set.
     - &#x2661; :red_square: Red *(keeps tradition)*
     - &#x2667; :blue_square: Blue *(best and closest to black)*
     - &#x2662; :green_square:   Green *(not like red, but significantly contrasted to the other colors)*
-    - ***Note:** Does not follow Mike Caro's sequence of &#x2667; Green and &#x2662; Blue, as, IMO, the blue is closer to back than it is to red.
+    - ***Note:** Does not follow Mike Caro's sequence of &#x2667; Green and &#x2662; Blue, as, IMO, the blue is closer to back than it is to red.*
 
 - Cards are sized for production with [MakePlayingCards.com](https://makeplayingcards.com) ("MPC") on a standard 2.5"×3.5" (63.5×89mm) Poker card, with MPC's bleed accounted for.
